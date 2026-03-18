@@ -598,7 +598,7 @@ function submitForm() {
     const ev = ALL_EVENTS.find(e => e.id === id);
     return tname[id.slice(0,2)] + ' ' + ev.day + (wd(ev) ? '（' + wd(ev) + '）' : '') + ' ' + (ev.name[currentLang] || ev.name.ja);
   });
-  saveToSheet(b, evLines, isUpdate);
+  saveToDb(b, evLines, isUpdate);
   document.getElementById('formWrap').style.display = 'none';
   document.getElementById('confirmBlock').classList.add('vis');
   document.getElementById('confirmName').textContent = b.name + L.honorific;
@@ -790,27 +790,41 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// ── GOOGLE SHEETS ──
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxYPcDdnD5y3PU0Xz8Zul7YRKup17l1hNN2mMIDKUzCSPnEac889x61dYwRadHCMDt7/exec';
+// ── SUPABASE ──
+const SUPABASE_URL = 'https://zszkeeodydpxhzfsuklm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tbm9obnB4aGxwa2lpZmxsZ2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MzYwMjUsImV4cCI6MjA4OTQxMjAyNX0.7cdGR_ETiyuQscIGwi544X9rgS5wOQu1i_l08UBjMnk';
 
-function saveToSheet(b, evLines, isUpdate) {
-  fetch(GAS_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      at:       b.at,
-      name:     b.name,
-      email:    b.email,
-      language: b.language,
-      events:   evLines.join(' / '),
-      notes:    b.notes || '',
-      status:   isUpdate ? '更新' : '新規',
-    }),
+function saveToDb(b, evLines, isUpdate) {
+  // 同じメールの既存レコードを削除してから新規追加（upsert）
+  fetch(SUPABASE_URL + '/rest/v1/reservations?email=eq.' + encodeURIComponent(b.email), {
+    method: 'DELETE',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+    },
   }).then(() => {
-    console.log('Sheet: request sent.');
+    return fetch(SUPABASE_URL + '/rest/v1/reservations', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({
+        at:       b.at,
+        name:     b.name,
+        email:    b.email,
+        language: b.language,
+        events:   evLines.join(' / '),
+        notes:    b.notes || '',
+        status:   isUpdate ? '更新' : '新規',
+      }),
+    });
+  }).then(() => {
+    console.log('Supabase: saved.');
   }).catch(err => {
-    console.warn('Sheet error:', err);
+    console.warn('Supabase error:', err);
   });
 }
 
