@@ -306,10 +306,10 @@ tr:hover td{background:var(--paper-warm);}
 const I18N = {
   ja: {
     title: '法要 ご参座予約',
-    period: '令和七年 十一月',
+    period: '令和八年 三月',
     nav: ['ご予約', '参座者', '管理'],
     secSelect: '法要をお選びください',
-    monthLabel: '令和七年 十一月 ── 複数選択可',
+    monthLabel: '令和八年 三月 ── 複数選択可',
     selUnit: '件の法要を選択中',
     formSecTitle: 'ご予約情報',
     lblLast: '姓', lblFirst: '名',
@@ -321,7 +321,7 @@ const I18N = {
     submitBtn: 'ご予約を確定する',
     confirmTitle: 'ご予約が完了しました',
     confirmNote: '確認のご連絡をお送りいたします（デモ）',
-    resetBtn: '別の方のご予約へ',
+    resetBtn: '予約のやり直しへ',
     secListTitle: 'ご参座者一覧',
     secAdminTitle: '管理画面',
     filterAll: 'すべて',
@@ -342,10 +342,10 @@ const I18N = {
   },
   zh: {
     title: '法会 参座预约',
-    period: '令和七年 十一月',
+    period: '令和八年 三月',
     nav: ['预约', '参座者', '管理'],
     secSelect: '请选择法会',
-    monthLabel: '令和七年 十一月 ── 可多选',
+    monthLabel: '令和八年 三月 ── 可多选',
     selUnit: '件法会已选择',
     formSecTitle: '预约信息',
     lblLast: '姓', lblFirst: '名',
@@ -357,7 +357,7 @@ const I18N = {
     submitBtn: '确认预约',
     confirmTitle: '预约已完成',
     confirmNote: '确认邮件将发送给您（演示）',
-    resetBtn: '为其他人预约',
+    resetBtn: '重新预约',
     secListTitle: '参座者名单',
     secAdminTitle: '管理页面',
     filterAll: '全部',
@@ -378,10 +378,10 @@ const I18N = {
   },
   en: {
     title: 'Service Reservation',
-    period: 'November, Reiwa 7',
+    period: 'March, Reiwa 8',
     nav: ['Reserve', 'Attendees', 'Admin'],
     secSelect: 'Select Services',
-    monthLabel: 'November, Reiwa 7 — Multiple selection allowed',
+    monthLabel: 'March, Reiwa 8 — Multiple selection allowed',
     selUnit: 'service(s) selected',
     formSecTitle: 'Your Information',
     lblLast: 'Last name', lblFirst: 'First name',
@@ -393,7 +393,7 @@ const I18N = {
     submitBtn: 'Confirm Reservation',
     confirmTitle: 'Reservation Complete',
     confirmNote: 'A confirmation email will be sent (demo)',
-    resetBtn: 'Reserve for another person',
+    resetBtn: 'Start over',
     secListTitle: 'Attendee List',
     secAdminTitle: 'Admin Dashboard',
     filterAll: 'All',
@@ -417,31 +417,38 @@ const I18N = {
 // ── TEMPLES ──
 const TEMPLES = {
   t1: { name: '中京本部', events: [
-    {id:'t1e01',day:'1',  wd:0,name:{ja:'開山忌',       zh:'开山忌',        en:'Founding Memorial'},    time:'10:00–11:30'},
-    {id:'t1e02',day:'3',  wd:1,name:{ja:'月例法要',      zh:'月例法会',      en:'Monthly Service'},       time:'09:00–10:00'},
-    {id:'t1e03',day:'7',  wd:5,name:{ja:'施餓鬼供養',    zh:'施饿鬼供养',    en:'Segaki Rite'},           time:'13:00–15:00'},
-    {id:'t1e04',day:'9',  wd:0,name:{ja:'追善供養（特別）',zh:'追善供养（特别）',en:'Special Memorial'},  time:'10:00–12:00'},
-    {id:'t1e05',day:'11', wd:2,name:{ja:'月例法要',      zh:'月例法会',      en:'Monthly Service'},       time:'09:00–10:00'},
-    {id:'t1e06',day:'15', wd:6,name:{ja:'先祖供養大法要', zh:'先祖供养大法会',en:'Ancestor Memorial'},    time:'11:00–14:00'},
-    {id:'t1e07',day:'17', wd:1,name:{ja:'水子供養',      zh:'水子供养',      en:'Mizuko Rite'},           time:'13:00–14:30'},
-    {id:'t1e08',day:'20–22',wd:null,name:{ja:'彼岸法要（三日間）',zh:'彼岸法会（三天）',en:'Higan Service (3 days)'}, time:'09:00–16:00'},
-    {id:'t1e09',day:'23', wd:0,name:{ja:'月例法要',      zh:'月例法会',      en:'Monthly Service'},       time:'09:00–10:00'},
-    {id:'t1e10',day:'25', wd:2,name:{ja:'弘法大師御忌法要',zh:'弘法大师忌日法会',en:"Kōbō Daishi Memorial"},time:'10:00–12:30'},
-    {id:'t1e11',day:'28', wd:5,name:{ja:'納め不動供養',  zh:'纳不动供养',    en:'Fudo Memorial'},         time:'13:00–14:30'},
-    {id:'t1e12',day:'30', wd:0,name:{ja:'月締め合同回向', zh:'月末合同回向',  en:'Month-end Joint Service'},time:'09:00–10:30'},
+    {id:'t1e01',day:'2',  wd:1,name:{ja:'一如祈念',                              zh:'一如祈念',en:'Prayer Gathering'},                                                                                                    time:'19:00'},
+    {id:'t1e02',day:'4',  wd:3,name:{ja:'廻向法要',                              zh:'廻向法要',en:'Merit Transfer Service'},                                                                                               time:'10:30'},
+    {id:'t1e03',day:'11', wd:3,name:{ja:'正輪会',                                zh:'正輪会',en:'Feast of Compassion'},                                                                                                    time:'10:30'},
+    {id:'t1e04',day:'15', wd:0,name:{ja:'常楽会併せて智流学院修了・卒行式',        zh:'常楽会併せて智流学院修了・卒行式',en:'Feast of Eternal Bliss & Chiryu Gakuin Completion and Graduation Ceremony'},               time:'10:30'},
+    {id:'t1e05',day:'19', wd:4,name:{ja:'法翔会（午前）',                         zh:'法翔会（午前）',en:'Hosho Service (Morning)'},                                                                                      time:'10:30'},
+    {id:'t1e06',day:'19', wd:4,name:{ja:'法翔会（夜）',                           zh:'法翔会（夜）',en:'Hosho Service (Evening)'},                                                                                        time:'19:00'},
+    {id:'t1e07',day:'20', wd:5,name:{ja:'立教90年春季彼岸会併せて一切万霊衷心廻向法要（午前）',zh:'立教90年春季彼岸会（午前）',en:'In Our 90th Year: Spring Higan Service for All Souls (Morning)'},                   time:'10:30'},
+    {id:'t1e08',day:'20', wd:5,name:{ja:'立教90年春季彼岸会併せて一切万霊衷心廻向法要（午後）',zh:'立教90年春季彼岸会（午後）',en:'In Our 90th Year: Spring Higan Service for All Souls (Afternoon)'},                 time:'14:30'},
+    {id:'t1e09',day:'23', wd:1,name:{ja:'一如祈念',                              zh:'一如祈念',en:'Prayer Gathering'},                                                                                                    time:'10:30'},
+    {id:'t1e10',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（午前）',zh:'立教90年大祭（午前）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Morning)'},                          time:'11:00'},
+    {id:'t1e11',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（午後）',zh:'立教90年大祭（午後）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Afternoon)'},                        time:'14:30'},
+    {id:'t1e12',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（夜）', zh:'立教90年大祭（夜）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Evening)'},                             time:'18:00'},
+    {id:'t1e13',day:'29', wd:0,name:{ja:'立教90年真如教主様お誕生120年大祭（録画上映）',zh:'立教90年大祭（録画上映）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Video Replay)'},             time:'10:30'},
+    {id:'t1e14',day:'29', wd:0,name:{ja:'立教90年第62回青年会弁論大会',            zh:'立教90年青年会弁論大会',en:'In Our 90th Year: YA Speech Sharing'},                                                               time:'13:30'},
   ]},
   t2: { name: '名古屋支部', events: [
-    {id:'t2e01',day:'2',  wd:0,name:{ja:'観音法要',      zh:'观音法会',      en:'Kannon Service'},        time:'10:00–11:00'},
-    {id:'t2e02',day:'5',  wd:3,name:{ja:'月例法要',      zh:'月例法会',      en:'Monthly Service'},       time:'09:30–10:30'},
-    {id:'t2e03',day:'8',  wd:6,name:{ja:'施餓鬼供養',    zh:'施饿鬼供养',    en:'Segaki Rite'},           time:'14:00–16:00'},
-    {id:'t2e04',day:'12', wd:3,name:{ja:'水子供養',      zh:'水子供养',      en:'Mizuko Rite'},           time:'13:00–14:00'},
-    {id:'t2e05',day:'14', wd:5,name:{ja:'月例法要',      zh:'月例法会',      en:'Monthly Service'},       time:'09:30–10:30'},
-    {id:'t2e06',day:'16', wd:0,name:{ja:'先祖合同供養',  zh:'先祖合同供养',  en:'Joint Ancestor Rite'},   time:'10:00–12:00'},
-    {id:'t2e07',day:'19', wd:3,name:{ja:'彼岸法要',      zh:'彼岸法会',      en:'Higan Service'},         time:'10:00–13:00'},
-    {id:'t2e08',day:'21', wd:5,name:{ja:'月例法要',      zh:'月例法会',      en:'Monthly Service'},       time:'09:30–10:30'},
-    {id:'t2e09',day:'24', wd:1,name:{ja:'地蔵供養',      zh:'地藏供养',      en:'Jizo Memorial'},         time:'13:00–14:30'},
-    {id:'t2e10',day:'26', wd:3,name:{ja:'追善供養',      zh:'追善供养',      en:'Service'},      time:'10:00–11:30'},
-    {id:'t2e11',day:'29', wd:6,name:{ja:'月例法要',      zh:'月例法会',      en:'Monthly Service'},       time:'09:30–10:30'},
+    {id:'t2e01',day:'4',  wd:3,name:{ja:'廻向法要',                         zh:'廻向法要',en:'Merit Transfer Service'},                                                                                      time:'10:30'},
+    {id:'t2e02',day:'7',  wd:6,name:{ja:'一如祈念',                         zh:'一如祈念',en:'Prayer Gathering'},                                                                                             time:'10:30'},
+    {id:'t2e03',day:'8',  wd:0,name:{ja:'弁才天様法楽法要',                  zh:'弁才天様法楽法要',en:'Feast of Bezaiten'},                                                                                   time:'10:30'},
+    {id:'t2e04',day:'11', wd:3,name:{ja:'正輪会',                           zh:'正輪会',en:'Feast of Compassion'},                                                                                           time:'10:30'},
+    {id:'t2e05',day:'14', wd:6,name:{ja:'大祭清掃奉仕',                      zh:'大祭清掃奉仕',en:'Cleaning Gohoshi'},                                                                                       time:'9:30'},
+    {id:'t2e06',day:'15', wd:0,name:{ja:'常楽会併せて智流学院修了・卒行式',   zh:'常楽会併せて智流学院修了・卒行式',en:'Feast of Eternal Bliss & Chiryu Gakuin Completion and Graduation Ceremony'},        time:'10:30'},
+    {id:'t2e07',day:'17', wd:2,name:{ja:'一如祈念',                         zh:'一如祈念',en:'Prayer Gathering'},                                                                                             time:'19:00'},
+    {id:'t2e08',day:'19', wd:4,name:{ja:'法翔会',                           zh:'法翔会',en:'Hosho Service'},                                                                                                 time:'10:30'},
+    {id:'t2e09',day:'19', wd:4,name:{ja:'法翔会（夜）',                      zh:'法翔会（夜）',en:'Hosho Service (Evening)'},                                                                                time:'19:00'},
+    {id:'t2e10',day:'20', wd:null,name:{ja:'立教90年春季彼岸会併せて一切万霊衷心廻向法要',zh:'立教90年春季彼岸会',en:'In Our 90th Year: Spring Higan Service for All Souls'},                              time:'10:30'},
+    {id:'t2e11',day:'20', wd:null,name:{ja:'立教90年春季彼岸会併せて一切万霊衷心廻向法要（午後）',zh:'立教90年春季彼岸会（午後）',en:'In Our 90th Year: Spring Higan Service for All Souls (Afternoon)'}, time:'14:30'},
+    {id:'t2e12',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（午前）', zh:'立教90年大祭（午前）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Morning)'},           time:'11:00'},
+    {id:'t2e13',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（午後）', zh:'立教90年大祭（午後）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Afternoon)'},         time:'14:30'},
+    {id:'t2e14',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（夜）',   zh:'立教90年大祭（夜）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Evening)'},             time:'19:00'},
+    {id:'t2e15',day:'29', wd:0,name:{ja:'立教90年真如教主様お誕生120年大祭（録画上映）',zh:'立教90年大祭（録画上映）',en:'In Our 90th Year: 120th Anniversary Video Replay'},                             time:'10:30'},
+    {id:'t2e16',day:'29', wd:0,name:{ja:'立教90年第62回青年会弁論大会',       zh:'立教90年青年会弁論大会',en:'In Our 90th Year: YA Speech Sharing'},                                                        time:'13:30'},
   ]},
 };
 const ALL_EVENTS = [...TEMPLES.t1.events, ...TEMPLES.t2.events];
@@ -633,41 +640,62 @@ function renderList() {
     + ['t1','t2'].map(tid =>
         TEMPLES[tid].events.map(ev =>
           '<button class="filter-btn' + (listFilter===ev.id?' active':'') + '" onclick="setFilter(\'' + ev.id + '\')">'
-          + TEMPLES[tid].name.slice(-2) + ' ' + ev.day + ' ' + (ev.name[currentLang] || ev.name.ja) + '</button>'
+          + TEMPLES[tid].name.slice(-2) + ' ' + ev.day + '日 ' + (ev.name[currentLang]||ev.name.ja) + '</button>'
         ).join('')
       ).join('');
 
   const wrap = document.getElementById('attList');
   wrap.innerHTML = '';
   const empty = document.getElementById('listEmpty');
-  const filtered = listFilter === 'all' ? bookings : bookings.filter(b => b.eventIds.includes(listFilter));
-  empty.style.display = filtered.length ? 'none' : 'block';
-  if (!filtered.length) return;
+
+  if (!bookings.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
 
   if (listFilter === 'all') {
+    // 寺ごと・法要ごとにグループ表示
+    let hasAny = false;
     ['t1','t2'].forEach(tid => {
       TEMPLES[tid].events.forEach(ev => {
-        const evB = bookings.filter(b => b.eventIds.includes(ev.id));
+        const evB = bookings.filter(b => b.eventIds && b.eventIds.includes(ev.id));
         if (!evB.length) return;
+        hasAny = true;
         const g = document.createElement('div');
         g.className = 'att-group';
-        g.innerHTML = '<div class="att-group-label">' + TEMPLES[tid].name + ' — ' + ev.day + (wd(ev)?'（'+wd(ev)+'）':'') + ' ' + (ev.name[currentLang]||ev.name.ja) + ' — ' + evB.length + '</div>';
+        g.innerHTML = '<div class="att-group-label">'
+          + TEMPLES[tid].name + ' — '
+          + ev.day + (wd(ev) ? '（' + wd(ev) + '）' : '') + ' '
+          + (ev.name[currentLang]||ev.name.ja)
+          + ' — ' + evB.length + '名</div>';
         evB.forEach((b, i) => g.appendChild(makeAttItem(b, i)));
         wrap.appendChild(g);
       });
     });
+    // eventIdsが空（旧データ）はまとめて末尾に表示
+    const legacy = bookings.filter(b => !b.eventIds || !b.eventIds.length);
+    if (legacy.length) {
+      const g = document.createElement('div');
+      g.className = 'att-group';
+      g.innerHTML = '<div class="att-group-label">その他 — ' + legacy.length + '名</div>';
+      legacy.forEach((b, i) => g.appendChild(makeAttItem(b, i)));
+      wrap.appendChild(g);
+    }
   } else {
+    const filtered = bookings.filter(b => b.eventIds && b.eventIds.includes(listFilter));
+    if (!filtered.length) { empty.style.display = 'block'; return; }
     filtered.forEach((b, i) => wrap.appendChild(makeAttItem(b, i)));
   }
 }
 
 function makeAttItem(b, i) {
-  const init = (b.lastName[0]||'') + (b.firstName[0]||'');
+  const init = (b.name||'').slice(0,1);
   const d = document.createElement('div');
   d.className = 'attendee-item';
   d.innerHTML = `<div class="att-num">${i+1}</div>
     <div class="att-avatar">${init}</div>
-    <div class="att-info"><div class="att-name">${b.name}${I18N[currentLang].honorific}</div><div class="att-sub">${b.language||'─'}</div></div>`;
+    <div class="att-info">
+      <div class="att-name">${b.name}${I18N[currentLang].honorific}</div>
+      <div class="att-sub">${b.language||'─'}</div>
+    </div>`;
   return d;
 }
 
@@ -677,51 +705,61 @@ function setFilter(f) { listFilter = f; renderList(); }
 function renderAdmin() {
   const L = I18N[currentLang];
   const total = bookings.length;
-  const ext = bookings.reduce((s,b) => s + b.eventIds.length, 0);
+  // 延べ参座数：eventsを / で分割してカウント
+  const ext = bookings.reduce((s,b) => {
+    const evList = b.events ? b.events.split(' / ').filter(e => e.trim()) : [];
+    return s + (evList.length || 1);
+  }, 0);
   document.getElementById('admTotal').textContent = total;
   document.getElementById('admJa').textContent = bookings.filter(b => b.language==='日本語').length;
   document.getElementById('admOther').textContent = bookings.filter(b => b.language && b.language!=='日本語').length;
   document.getElementById('admExt').textContent = ext;
   const sec = document.getElementById('admSections');
   sec.innerHTML = '';
-  ['t1','t2'].forEach(tid => {
-    const th = document.createElement('div');
-    th.style.cssText = 'font-family:"Noto Serif JP","Noto Serif SC",serif;font-size:0.85rem;letter-spacing:0.15em;color:var(--ink-mid);margin:1.5rem 0 0.6rem;padding-bottom:6px;border-bottom:1px solid var(--border-mid);';
-    th.textContent = TEMPLES[tid].name;
-    sec.appendChild(th);
-    TEMPLES[tid].events.forEach(ev => {
-      const evB = bookings.filter(b => b.eventIds.includes(ev.id));
-      const div = document.createElement('div');
-      div.className = 'adm-event-section';
-      const head = document.createElement('div');
-      head.className = 'adm-event-head';
-      head.innerHTML = '<span class="adm-event-name">' + ev.day + (wd(ev)?'（'+wd(ev)+'）':'') + ' ' + (ev.name[currentLang]||ev.name.ja) + '</span><span class="adm-event-count">' + evB.length + '</span>';
-      div.appendChild(head);
-      if (evB.length) {
-        const tw = document.createElement('div');
-        tw.className = 'tbl-wrap';
-        tw.innerHTML = '<table><thead><tr><th>#</th><th>' + L.tblName + '</th><th>' + L.tblEmail + '</th><th>' + L.tblLang + '</th><th>' + L.tblDate + '</th><th></th></tr></thead><tbody>'
-          + evB.map((b,i) => '<tr><td style="color:var(--ink-faint)">' + (i+1) + '</td><td>' + b.name + L.honorific + '</td><td style="color:var(--ink-mid);font-size:0.72rem">' + b.email + '</td><td>' + (b.language||'─') + '</td><td style="color:var(--ink-faint);font-size:0.68rem">' + b.at + '</td><td><button class="del-btn" onclick="delBooking(' + b.id + ',\'' + ev.id + '\')">' + L.tblDel + '</button></td></tr>').join('')
-          + '</tbody></table>';
-        div.appendChild(tw);
-      } else {
-        const e = document.createElement('div');
-        e.style.cssText = 'text-align:center;padding:0.75rem;color:var(--ink-faint);font-size:0.7rem;letter-spacing:0.08em;';
-        e.textContent = L.noBookings;
-        div.appendChild(e);
-      }
-      sec.appendChild(div);
-    });
-  });
+  if (!total) {
+    const e = document.createElement('div');
+    e.className = 'empty';
+    e.textContent = L.noBookings;
+    sec.appendChild(e);
+    return;
+  }
+  const tw = document.createElement('div');
+  tw.className = 'tbl-wrap';
+  const rows = bookings.map((b, i) => {
+    const evList = b.events ? b.events.split(' / ').filter(e => e.trim()) : ['─'];
+    const evCell = evList.map(e => '<div style="padding:1px 0">' + e + '</div>').join('');
+    return '<tr>'
+      + '<td style="color:var(--ink-faint);vertical-align:top">' + (i+1) + '</td>'
+      + '<td style="vertical-align:top">' + b.name + L.honorific + '</td>'
+      + '<td style="color:var(--ink-mid);font-size:0.72rem;vertical-align:top">' + b.email + '</td>'
+      + '<td style="vertical-align:top">' + (b.language||'─') + '</td>'
+      + '<td style="font-size:0.68rem;color:var(--ink-mid)">' + evCell + '</td>'
+      + '<td style="color:var(--ink-faint);font-size:0.68rem;vertical-align:top">' + b.at + '</td>'
+      + '<td style="vertical-align:top"><button class="del-btn" onclick="delBooking(\'' + b.email + '\')">' + L.tblDel + '</button></td>'
+      + '</tr>';
+  }).join('');
+  tw.innerHTML = '<table><thead><tr>'
+    + '<th>#</th><th>' + L.tblName + '</th><th>' + L.tblEmail + '</th>'
+    + '<th>' + L.tblLang + '</th><th>法要</th><th>' + L.tblDate + '</th><th></th>'
+    + '</tr></thead><tbody>' + rows + '</tbody></table>';
+  sec.appendChild(tw);
 }
 
-function delBooking(id, evId) {
+function delBooking(email) {
   if (!confirm(I18N[currentLang].confirmDel)) return;
-  const b = bookings.find(b => b.id === id);
-  if (!b) return;
-  b.eventIds = b.eventIds.filter(e => e !== evId);
-  if (!b.eventIds.length) bookings = bookings.filter(bk => bk.id !== id);
-  setTimeout(() => { renderAdmin(); renderList(); renderEvents(); }, 0);
+  // Supabaseから削除
+  fetch(SUPABASE_URL + '/rest/v1/reservations?email=eq.' + encodeURIComponent(email), {
+    method: 'DELETE',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+    },
+  }).then(() => {
+    bookings = bookings.filter(b => b.email !== email);
+    setTimeout(() => { renderAdmin(); renderList(); }, 0);
+  }).catch(err => {
+    console.warn('Delete error:', err);
+  });
 }
 
 // ── ADMIN AUTH ──
@@ -791,39 +829,40 @@ function showToast(msg) {
 }
 
 // ── SUPABASE ──
-const SUPABASE_URL = 'https://zszkeeodydpxhzfsuklm.supabase.co';
+const SUPABASE_URL = 'https://omnohnpxhlpkiifllgdd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tbm9obnB4aGxwa2lpZmxsZ2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MzYwMjUsImV4cCI6MjA4OTQxMjAyNX0.7cdGR_ETiyuQscIGwi544X9rgS5wOQu1i_l08UBjMnk';
 
 function saveToDb(b, evLines, isUpdate) {
-  // 同じメールの既存レコードを削除してから新規追加（upsert）
+  const payload = {
+    at:        b.at,
+    name:      b.name,
+    email:     b.email,
+    language:  b.language,
+    events:    evLines.join(' / '),
+    event_ids: JSON.stringify(b.eventIds),
+    notes:     b.notes || '',
+    status:    isUpdate ? '更新' : '新規',
+  };
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=minimal',
+  };
+  // 既存レコード削除 → 新規追加 → 再読み込み
   fetch(SUPABASE_URL + '/rest/v1/reservations?email=eq.' + encodeURIComponent(b.email), {
-    method: 'DELETE',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-    },
-  }).then(() => {
-    return fetch(SUPABASE_URL + '/rest/v1/reservations', {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-      },
-      body: JSON.stringify({
-        at:       b.at,
-        name:     b.name,
-        email:    b.email,
-        language: b.language,
-        events:   evLines.join(' / '),
-        notes:    b.notes || '',
-        status:   isUpdate ? '更新' : '新規',
-      }),
-    });
-  }).then(() => {
+    method: 'DELETE', headers,
+  })
+  .then(() => fetch(SUPABASE_URL + '/rest/v1/reservations', {
+    method: 'POST', headers,
+    body: JSON.stringify(payload),
+  }))
+  .then(res => {
+    if (!res.ok) return res.text().then(t => { throw new Error(t); });
     console.log('Supabase: saved.');
-  }).catch(err => {
+    loadFromDb(); // 保存後に再読み込みして画面を更新
+  })
+  .catch(err => {
     console.warn('Supabase error:', err);
   });
 }
@@ -855,8 +894,45 @@ function sendConfirmEmail(b, evLines, isUpdate) {
   });
 }
 
-applyI18n();
-renderEvents();
+function loadFromDb() {
+  fetch(SUPABASE_URL + '/rest/v1/reservations?select=*&order=at.asc', {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+    },
+  })
+  .then(r => r.json())
+  .then(rows => {
+    if (!Array.isArray(rows)) return;
+    bookings = rows.map(r => {
+      let eventIds = [];
+      try { eventIds = r.event_ids ? JSON.parse(r.event_ids) : []; } catch(e) {}
+      return {
+        id:       r.id || Date.now(),
+        name:     r.name || '',
+        email:    r.email || '',
+        language: r.language || '',
+        notes:    r.notes || '',
+        events:   r.events || '',
+        eventIds: eventIds,
+        at:       r.at || '',
+        status:   r.status || '新規',
+      };
+    });
+    renderList();
+    renderAdmin();
+    console.log('Supabase: loaded ' + bookings.length + ' bookings.');
+  })
+  .catch(err => {
+    console.warn('Supabase load error:', err);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  applyI18n();
+  renderEvents();
+  loadFromDb();
+});
 
 </script>
 </body>
