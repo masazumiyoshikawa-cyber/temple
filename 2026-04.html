@@ -6,6 +6,7 @@
 <title>法要 参座予約</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&family=Noto+Sans+JP:wght@300;400&family=Noto+Serif+SC:wght@300;400&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -178,11 +179,9 @@ tr:hover td{background:var(--paper-warm);}
   <div style="display:flex;justify-content:center;align-items:center;gap:0;border-bottom:1px solid rgba(255,255,255,0.07);padding:6px 0;">
     <a href="2026-02.html" style="color:rgba(255,255,255,0.35);font-size:0.7rem;padding:3px 16px;text-decoration:none;letter-spacing:0.12em;font-family:'Noto Serif JP','Noto Serif SC',serif;">2月</a>
     <span style="color:rgba(255,255,255,0.15);font-size:0.6rem;">|</span>
-    <a href="2026-03.html" style="color:rgba(255,255,255,0.35);font-size:0.7rem;padding:3px 16px;text-decoration:none;letter-spacing:0.12em;font-family:'Noto Serif JP','Noto Serif SC',serif;">3月</a>
+    <span style="color:rgba(200,175,130,0.9);font-size:0.7rem;padding:3px 16px;letter-spacing:0.12em;font-family:'Noto Serif JP','Noto Serif SC',serif;">3月 ●</span>
     <span style="color:rgba(255,255,255,0.15);font-size:0.6rem;">|</span>
-    <span style="color:rgba(200,175,130,0.9);font-size:0.7rem;padding:3px 16px;letter-spacing:0.12em;font-family:'Noto Serif JP','Noto Serif SC',serif;">4月 ●</span>
-    <span style="color:rgba(255,255,255,0.15);font-size:0.6rem;">|</span>
-    <a href="2026-05.html" style="color:rgba(255,255,255,0.35);font-size:0.7rem;padding:3px 16px;text-decoration:none;letter-spacing:0.12em;font-family:'Noto Serif JP','Noto Serif SC',serif;">5月</a>
+    <a href="2026-04.html" style="color:rgba(255,255,255,0.35);font-size:0.7rem;padding:3px 16px;text-decoration:none;letter-spacing:0.12em;font-family:'Noto Serif JP','Noto Serif SC',serif;">4月</a>
   </div>
   <div class="lang-bar">
     <button class="lang-btn active" onclick="setLang('ja')">日本語</button>
@@ -343,6 +342,10 @@ tr:hover td{background:var(--paper-warm);}
       <div class="sec-title" id="sec-list-title"></div>
       <div class="sec-rule"></div>
     </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:1rem;">
+      <button onclick="loadSampleData()" style="padding:6px 16px;background:none;border:1px solid var(--border-mid);border-radius:var(--radius);font-size:0.75rem;cursor:pointer;color:var(--ink-mid);font-family:inherit;letter-spacing:0.06em;">サンプルデータ</button>
+      <button onclick="downloadExcel()" style="padding:6px 16px;background:var(--ink);color:rgba(255,255,255,0.85);border:none;border-radius:var(--radius);font-size:0.75rem;cursor:pointer;font-family:inherit;letter-spacing:0.08em;" id="btn-excel">📥 Excel ダウンロード</button>
+    </div>
     <div class="list-filter" id="listFilter"></div>
     <div class="empty" id="listEmpty"></div>
     <div id="attList"></div>
@@ -377,10 +380,10 @@ tr:hover td{background:var(--paper-warm);}
 const I18N = {
   ja: {
     title: '法要 参座予約',
-    period: '令和八年 四月',
+    period: '令和八年 三月',
     nav: ['ご予約', '参座者', '管理'],
     secSelect: '法要をお選びください',
-    monthLabel: '令和八年 四月 ── 複数選択可',
+    monthLabel: '令和八年 三月 ── 複数選択可',
     selUnit: '件の法要を選択中',
     formSecTitle: 'ご予約情報',
     lblLast: '姓', lblFirst: '名',
@@ -419,10 +422,10 @@ const I18N = {
   },
   zh: {
     title: '法会 参座预约',
-    period: '令和八年 四月',
+    period: '令和八年 三月',
     nav: ['预约', '参座者', '管理'],
     secSelect: '请选择法会',
-    monthLabel: '令和八年 四月 ── 可多选',
+    monthLabel: '令和八年 三月 ── 可多选',
     selUnit: '件法会已选择',
     formSecTitle: '预约信息',
     lblLast: '姓', lblFirst: '名',
@@ -461,10 +464,10 @@ const I18N = {
   },
   en: {
     title: 'Service Reservation',
-    period: 'April, Reiwa 8',
+    period: 'March, Reiwa 8',
     nav: ['Reserve', 'Attendees', 'Admin'],
     secSelect: 'Select Services',
-    monthLabel: 'April, Reiwa 8 — Multiple selection allowed',
+    monthLabel: 'March, Reiwa 8 — Multiple selection allowed',
     selUnit: 'service(s) selected',
     formSecTitle: 'Your Information',
     lblLast: 'Last name', lblFirst: 'First name',
@@ -506,12 +509,38 @@ const I18N = {
 // ── TEMPLES ──
 const TEMPLES = {
   t1: { name: '中京本部', events: [
-    // ★ 4月の中京本部の法要をここに追加してください
-    // 例: {id:'t1e01',day:'1', wd:3,name:{ja:'月例法要',zh:'月例法会',en:'Monthly Service'},time:'10:30'},
+    {id:'t1e01',day:'2',  wd:1,name:{ja:'一如祈念',                              zh:'一如祈念',en:'Prayer Gathering'},                                                                                                    time:'19:00'},
+    {id:'t1e02',day:'4',  wd:3,name:{ja:'廻向法要',                              zh:'廻向法要',en:'Merit Transfer Service'},                                                                                               time:'10:30'},
+    {id:'t1e03',day:'11', wd:3,name:{ja:'正輪会',                                zh:'正輪会',en:'Feast of Compassion'},                                                                                                    time:'10:30'},
+    {id:'t1e04',day:'15', wd:0,name:{ja:'常楽会併せて智流学院修了・卒行式',        zh:'常楽会併せて智流学院修了・卒行式',en:'Feast of Eternal Bliss & Chiryu Gakuin Completion and Graduation Ceremony'},               time:'10:30'},
+    {id:'t1e05',day:'19', wd:4,name:{ja:'法翔会（午前）',                         zh:'法翔会（午前）',en:'Hosho Service (Morning)'},                                                                                      time:'10:30'},
+    {id:'t1e06',day:'19', wd:4,name:{ja:'法翔会（夜）',                           zh:'法翔会（夜）',en:'Hosho Service (Evening)'},                                                                                        time:'19:00'},
+    {id:'t1e07',day:'20', wd:5,name:{ja:'立教90年春季彼岸会併せて一切万霊衷心廻向法要（午前）',zh:'立教90年春季彼岸会（午前）',en:'In Our 90th Year: Spring Higan Service for All Souls (Morning)'},                   time:'10:30'},
+    {id:'t1e08',day:'20', wd:5,name:{ja:'立教90年春季彼岸会併せて一切万霊衷心廻向法要（午後）',zh:'立教90年春季彼岸会（午後）',en:'In Our 90th Year: Spring Higan Service for All Souls (Afternoon)'},                 time:'14:30'},
+    {id:'t1e09',day:'23', wd:1,name:{ja:'一如祈念',                              zh:'一如祈念',en:'Prayer Gathering'},                                                                                                    time:'10:30'},
+    {id:'t1e10',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（午前）',zh:'立教90年大祭（午前）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Morning)'},                          time:'11:00'},
+    {id:'t1e11',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（午後）',zh:'立教90年大祭（午後）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Afternoon)'},                        time:'14:30'},
+    {id:'t1e12',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（夜）', zh:'立教90年大祭（夜）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Evening)'},                             time:'18:00'},
+    {id:'t1e13',day:'29', wd:0,name:{ja:'立教90年真如教主様お誕生120年大祭（録画上映）',zh:'立教90年大祭（録画上映）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Video Replay)'},             time:'10:30'},
+    {id:'t1e14',day:'29', wd:0,name:{ja:'立教90年第62回青年会弁論大会',            zh:'立教90年青年会弁論大会',en:'In Our 90th Year: YA Speech Sharing'},                                                               time:'13:30'},
   ]},
   t2: { name: '名古屋支部', events: [
-    // ★ 4月の名古屋支部の法要をここに追加してください
-    // 例: {id:'t2e01',day:'2', wd:4,name:{ja:'月例法要',zh:'月例法会',en:'Monthly Service'},time:'10:30'},
+    {id:'t2e01',day:'4',  wd:3,name:{ja:'廻向法要',                         zh:'廻向法要',en:'Merit Transfer Service'},                                                                                      time:'10:30'},
+    {id:'t2e02',day:'7',  wd:6,name:{ja:'一如祈念',                         zh:'一如祈念',en:'Prayer Gathering'},                                                                                             time:'10:30'},
+    {id:'t2e03',day:'8',  wd:0,name:{ja:'弁才天様法楽法要',                  zh:'弁才天様法楽法要',en:'Feast of Bezaiten'},                                                                                   time:'10:30'},
+    {id:'t2e04',day:'11', wd:3,name:{ja:'正輪会',                           zh:'正輪会',en:'Feast of Compassion'},                                                                                           time:'10:30'},
+    {id:'t2e05',day:'14', wd:6,name:{ja:'大祭清掃奉仕',                      zh:'大祭清掃奉仕',en:'Cleaning Gohoshi'},                                                                                       time:'9:30'},
+    {id:'t2e06',day:'15', wd:0,name:{ja:'常楽会併せて智流学院修了・卒行式',   zh:'常楽会併せて智流学院修了・卒行式',en:'Feast of Eternal Bliss & Chiryu Gakuin Completion and Graduation Ceremony'},        time:'10:30'},
+    {id:'t2e07',day:'17', wd:2,name:{ja:'一如祈念',                         zh:'一如祈念',en:'Prayer Gathering'},                                                                                             time:'19:00'},
+    {id:'t2e08',day:'19', wd:4,name:{ja:'法翔会',                           zh:'法翔会',en:'Hosho Service'},                                                                                                 time:'10:30'},
+    {id:'t2e09',day:'19', wd:4,name:{ja:'法翔会（夜）',                      zh:'法翔会（夜）',en:'Hosho Service (Evening)'},                                                                                time:'19:00'},
+    {id:'t2e10',day:'20', wd:null,name:{ja:'立教90年春季彼岸会併せて一切万霊衷心廻向法要',zh:'立教90年春季彼岸会',en:'In Our 90th Year: Spring Higan Service for All Souls'},                              time:'10:30'},
+    {id:'t2e11',day:'20', wd:null,name:{ja:'立教90年春季彼岸会併せて一切万霊衷心廻向法要（午後）',zh:'立教90年春季彼岸会（午後）',en:'In Our 90th Year: Spring Higan Service for All Souls (Afternoon)'}, time:'14:30'},
+    {id:'t2e12',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（午前）', zh:'立教90年大祭（午前）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Morning)'},           time:'11:00'},
+    {id:'t2e13',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（午後）', zh:'立教90年大祭（午後）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Afternoon)'},         time:'14:30'},
+    {id:'t2e14',day:'28', wd:6,name:{ja:'立教90年真如教主様お誕生120年大祭（夜）',   zh:'立教90年大祭（夜）',en:'In Our 90th Year: 120th Anniversary of Shinnyo Kyoshu\'s Birth (Evening)'},             time:'19:00'},
+    {id:'t2e15',day:'29', wd:0,name:{ja:'立教90年真如教主様お誕生120年大祭（録画上映）',zh:'立教90年大祭（録画上映）',en:'In Our 90th Year: 120th Anniversary Video Replay'},                             time:'10:30'},
+    {id:'t2e16',day:'29', wd:0,name:{ja:'立教90年第62回青年会弁論大会',       zh:'立教90年青年会弁論大会',en:'In Our 90th Year: YA Speech Sharing'},                                                        time:'13:30'},
   ]},
 };
 const ALL_EVENTS = [...TEMPLES.t1.events, ...TEMPLES.t2.events];
@@ -994,6 +1023,154 @@ async function submitPwChange() {
   }
 }
 
+// ── EXCEL DOWNLOAD ──
+function downloadExcel() {
+  if (!bookings.length) { showToast('予約データがありません'); return; }
+
+  const FONT = 'Meiryo UI';
+  const wb = XLSX.utils.book_new();
+  const ws = {};
+
+  // ヘッダー定義
+  const headers = ['精舎', '法要名', '人数', '名前', '言語', 'コメント'];
+
+  // 寺・法要ごとに参座者を集計
+  const rows = [];
+  const allEventsOrdered = [...TEMPLES.t1.events, ...TEMPLES.t2.events];
+
+  allEventsOrdered.forEach(ev => {
+    const tname = ev.id.startsWith('t1') ? '中京本部' : '名古屋支部';
+    const evName = ev.name.ja + ' ' + ev.time;
+    const attendees = bookings
+      .filter(b => b.eventIds && b.eventIds.includes(ev.id))
+      .sort((a, b) => (a.language || '').localeCompare(b.language || '', 'ja'));
+    if (!attendees.length) return;
+    attendees.forEach((b, i) => {
+      rows.push({
+        tname,
+        evName,
+        count: attendees.length,
+        name: b.name,
+        language: b.language || '',
+        notes: b.notes || '',
+        isFirst: i === 0,
+        isLast: i === attendees.length - 1,
+      });
+    });
+  });
+
+  if (!rows.length) { showToast('参座者データがありません'); return; }
+
+  // セルデータを書き込む
+  const R_START = 1;
+  const COL = { temple: 0, ev: 1, count: 2, name: 3, lang: 4, notes: 5 };
+
+  // ヘッダー
+  headers.forEach((h, c) => {
+    const addr = XLSX.utils.encode_cell({r: 0, c});
+    ws[addr] = {
+      v: h, t: 's',
+      s: {
+        font: { name: FONT, bold: true, sz: 11 },
+        fill: { fgColor: { rgb: 'F2EDE5' } },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: {
+          top:    { style: 'medium', color: { rgb: '2A2520' } },
+          bottom: { style: 'medium', color: { rgb: '2A2520' } },
+          left:   { style: 'medium', color: { rgb: '2A2520' } },
+          right:  { style: 'medium', color: { rgb: '2A2520' } },
+        }
+      }
+    };
+  });
+
+  // データ行
+  const merges = [];
+  rows.forEach((row, i) => {
+    const r = R_START + i;
+    const bottomStyle = row.isLast ? 'medium' : 'thin';
+    const bottomColor = row.isLast ? '2A2520' : 'C8B89A';
+
+    const baseBorder = (isLeft, isRight) => ({
+      top:    { style: 'thin',   color: { rgb: 'C8B89A' } },
+      bottom: { style: bottomStyle, color: { rgb: bottomColor } },
+      left:   { style: isLeft  ? 'medium' : 'thin', color: { rgb: isLeft  ? '2A2520' : 'C8B89A' } },
+      right:  { style: isRight ? 'medium' : 'thin', color: { rgb: isRight ? '2A2520' : 'C8B89A' } },
+    });
+
+    // 精舎列
+    ws[XLSX.utils.encode_cell({r, c: COL.temple})] = {
+      v: row.isFirst ? row.tname : '', t: 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { horizontal: 'center', vertical: 'top', wrapText: true }, border: baseBorder(true, false) }
+    };
+    // 法要名列
+    ws[XLSX.utils.encode_cell({r, c: COL.ev})] = {
+      v: row.isFirst ? row.evName : '', t: 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { vertical: 'top', wrapText: true }, border: baseBorder(false, false) }
+    };
+    // 人数列
+    ws[XLSX.utils.encode_cell({r, c: COL.count})] = {
+      v: row.isFirst ? row.count : '', t: row.isFirst ? 'n' : 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { horizontal: 'center', vertical: 'top' }, border: baseBorder(false, false) }
+    };
+    // 名前列
+    ws[XLSX.utils.encode_cell({r, c: COL.name})] = {
+      v: row.name, t: 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { vertical: 'center' }, border: baseBorder(false, false) }
+    };
+    // 言語列
+    ws[XLSX.utils.encode_cell({r, c: COL.lang})] = {
+      v: row.language, t: 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { horizontal: 'center', vertical: 'center' }, border: baseBorder(false, false) }
+    };
+    // コメント列
+    ws[XLSX.utils.encode_cell({r, c: COL.notes})] = {
+      v: row.notes, t: 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { vertical: 'center', wrapText: true }, border: baseBorder(false, true) }
+    };
+  });
+
+  // セル結合：精舎・法要名・人数列を同じ法要の行でマージ
+  let mergeStart = R_START;
+  rows.forEach((row, i) => {
+    if (row.isLast) {
+      const mergeEnd = R_START + i;
+      if (mergeEnd > mergeStart) {
+        merges.push({ s: { r: mergeStart, c: COL.temple }, e: { r: mergeEnd, c: COL.temple } });
+        merges.push({ s: { r: mergeStart, c: COL.ev },     e: { r: mergeEnd, c: COL.ev } });
+        merges.push({ s: { r: mergeStart, c: COL.count },  e: { r: mergeEnd, c: COL.count } });
+      }
+      mergeStart = mergeEnd + 1;
+    }
+  });
+
+  ws['!merges'] = merges;
+
+  // 列幅
+  ws['!cols'] = [
+    { wch: 14 }, // 精舎
+    { wch: 30 }, // 法要名
+    { wch: 6  }, // 人数
+    { wch: 18 }, // 名前
+    { wch: 12 }, // 言語
+    { wch: 30 }, // コメント
+  ];
+
+  // 行高
+  ws['!rows'] = [{ hpt: 20 }];
+  rows.forEach((_, i) => { ws['!rows'][R_START + i] = { hpt: 18 }; });
+
+  // 範囲
+  ws['!ref'] = XLSX.utils.encode_range({
+    s: { r: 0, c: 0 },
+    e: { r: R_START + rows.length - 1, c: 5 }
+  });
+
+  const month = document.getElementById('hdr-period')?.textContent || '参座者一覧';
+  XLSX.utils.book_append_sheet(wb, ws, '参座者一覧');
+  XLSX.writeFile(wb, month + '_参座者一覧.xlsx');
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
@@ -1106,6 +1283,58 @@ document.addEventListener('DOMContentLoaded', function() {
   renderEvents();
   loadFromDb();
 });
+
+// ── デモ用サンプルデータ ──
+// 本番環境では下の関数を呼ばないでください
+function loadSampleData() {
+  bookings = [
+    {
+      id: 1, name: '山田 花子', email: 'hanako@example.com',
+      language: '日本語', notes: '',
+      eventIds: ['t1e01','t1e03','t2e01'],
+      events: '中京本部 2日 一如祈念 19:00 / 中京本部 11日 正輪会 10:30 / 名古屋支部 4日 廻向法要 10:30',
+      at: '2026/03/01 10:00:00', status: '新規',
+    },
+    {
+      id: 2, name: 'John Smith', email: 'john@example.com',
+      language: 'English', notes: 'First time attendee',
+      eventIds: ['t1e01','t2e02'],
+      events: '中京本部 2日 一如祈念 19:00 / 名古屋支部 7日 一如祈念 10:30',
+      at: '2026/03/02 11:30:00', status: '新規',
+    },
+    {
+      id: 3, name: '李 明', email: 'liming@example.com',
+      language: '中文', notes: '需要中文翻译',
+      eventIds: ['t1e03','t2e04'],
+      events: '中京本部 11日 正輪会 10:30 / 名古屋支部 11日 正輪会 10:30',
+      at: '2026/03/03 09:15:00', status: '新規',
+    },
+    {
+      id: 4, name: '鈴木 一郎', email: 'ichiro@example.com',
+      language: '日本語', notes: '車椅子対応をお願いします',
+      eventIds: ['t1e01','t1e04','t2e01'],
+      events: '中京本部 2日 一如祈念 19:00 / 中京本部 15日 常楽会 10:30 / 名古屋支部 4日 廻向法要 10:30',
+      at: '2026/03/03 14:00:00', status: '新規',
+    },
+    {
+      id: 5, name: 'Kim Ji-yeon', email: 'jiyeon@example.com',
+      language: 'English', notes: '',
+      eventIds: ['t2e03'],
+      events: '名古屋支部 8日 弁才天様法楽法要 10:30',
+      at: '2026/03/04 08:45:00', status: '新規',
+    },
+    {
+      id: 6, name: '田中 さくら', email: 'sakura@example.com',
+      language: '日本語', notes: '',
+      eventIds: ['t1e03','t1e05'],
+      events: '中京本部 11日 正輪会 10:30 / 中京本部 19日 法翔会（午前） 10:30',
+      at: '2026/03/05 16:20:00', status: '新規',
+    },
+  ];
+  renderList();
+  renderAdmin();
+  showToast('サンプルデータを読み込みました');
+}
 
 </script>
 </body>
