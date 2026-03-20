@@ -6,6 +6,7 @@
 <title>法要 参座予約</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&family=Noto+Sans+JP:wght@300;400&family=Noto+Serif+SC:wght@300;400&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -340,6 +341,9 @@ tr:hover td{background:var(--paper-warm);}
     <div class="sec-head">
       <div class="sec-title" id="sec-list-title"></div>
       <div class="sec-rule"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+      <button onclick="downloadExcel()" style="padding:6px 16px;background:var(--ink);color:rgba(255,255,255,0.85);border:none;border-radius:var(--radius);font-size:0.75rem;cursor:pointer;font-family:inherit;letter-spacing:0.08em;" id="btn-excel">📥 Excel ダウンロード</button>
     </div>
     <div class="list-filter" id="listFilter"></div>
     <div class="empty" id="listEmpty"></div>
@@ -1016,6 +1020,150 @@ async function submitPwChange() {
   } catch(e) {
     errEl.textContent = 'ネットワークエラーが発生しました。';
   }
+}
+
+// ── EXCEL DOWNLOAD ──
+function downloadExcel() {
+  if (!bookings.length) { showToast('予約データがありません'); return; }
+
+  const FONT = 'Meiryo UI';
+  const wb = XLSX.utils.book_new();
+  const ws = {};
+
+  // ヘッダー定義
+  const headers = ['法要', '人数', '名前', '言語', 'コメント'];
+
+  // 寺・法要ごとに参座者を集計
+  const rows = []; // {eventLabel, count, name, language, notes}
+  const allEventsOrdered = [...TEMPLES.t1.events, ...TEMPLES.t2.events];
+
+  allEventsOrdered.forEach(ev => {
+    const tname = ev.id.startsWith('t1') ? '中京本部' : '名古屋支部';
+    const evLabel = tname + ' ' + ev.day + '日 ' + ev.name.ja + ' ' + ev.time;
+    // この法要に参座する人を言語でソート
+    const attendees = bookings
+      .filter(b => b.eventIds && b.eventIds.includes(ev.id))
+      .sort((a, b) => (a.language || '').localeCompare(b.language || '', 'ja'));
+    if (!attendees.length) return;
+    attendees.forEach((b, i) => {
+      rows.push({
+        eventLabel: i === 0 ? evLabel : '',   // 最初の行のみ法要名
+        countLabel: i === 0 ? attendees.length : '', // 最初の行のみ人数
+        count: attendees.length,
+        name: b.name,
+        language: b.language || '',
+        notes: b.notes || '',
+        isFirst: i === 0,
+        isLast: i === attendees.length - 1,
+        evLabel,
+      });
+    });
+  });
+
+  if (!rows.length) { showToast('参座者データがありません'); return; }
+
+  // セルデータを書き込む
+  const R_START = 1; // 0-indexed: row 0 = header
+  const COL = { ev: 0, count: 1, name: 2, lang: 3, notes: 4 };
+
+  // ヘッダー
+  headers.forEach((h, c) => {
+    const addr = XLSX.utils.encode_cell({r: 0, c});
+    ws[addr] = {
+      v: h, t: 's',
+      s: {
+        font: { name: FONT, bold: true, sz: 11 },
+        fill: { fgColor: { rgb: 'F2EDE5' } },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: {
+          top:    { style: 'medium', color: { rgb: '2A2520' } },
+          bottom: { style: 'medium', color: { rgb: '2A2520' } },
+          left:   { style: 'medium', color: { rgb: '2A2520' } },
+          right:  { style: 'medium', color: { rgb: '2A2520' } },
+        }
+      }
+    };
+  });
+
+  // データ行
+  const merges = [];
+  rows.forEach((row, i) => {
+    const r = R_START + i;
+    const isGroupBorder = row.isLast;
+    const bottomStyle = isGroupBorder ? 'medium' : 'thin';
+    const bottomColor = isGroupBorder ? '2A2520' : 'C8B89A';
+
+    const baseBorder = (isLeft, isRight) => ({
+      top:    { style: 'thin',   color: { rgb: 'C8B89A' } },
+      bottom: { style: bottomStyle, color: { rgb: bottomColor } },
+      left:   { style: isLeft  ? 'medium' : 'thin', color: { rgb: isLeft  ? '2A2520' : 'C8B89A' } },
+      right:  { style: isRight ? 'medium' : 'thin', color: { rgb: isRight ? '2A2520' : 'C8B89A' } },
+    });
+
+    // 法要列
+    ws[XLSX.utils.encode_cell({r, c: COL.ev})] = {
+      v: row.isFirst ? row.evLabel : '', t: 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { vertical: 'center', wrapText: true }, border: baseBorder(true, false) }
+    };
+    // 人数列
+    ws[XLSX.utils.encode_cell({r, c: COL.count})] = {
+      v: row.isFirst ? row.count : '', t: row.isFirst ? 'n' : 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { horizontal: 'center', vertical: 'center' }, border: baseBorder(false, false) }
+    };
+    // 名前列
+    ws[XLSX.utils.encode_cell({r, c: COL.name})] = {
+      v: row.name, t: 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { vertical: 'center' }, border: baseBorder(false, false) }
+    };
+    // 言語列
+    ws[XLSX.utils.encode_cell({r, c: COL.lang})] = {
+      v: row.language, t: 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { horizontal: 'center', vertical: 'center' }, border: baseBorder(false, false) }
+    };
+    // コメント列
+    ws[XLSX.utils.encode_cell({r, c: COL.notes})] = {
+      v: row.notes, t: 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { vertical: 'center', wrapText: true }, border: baseBorder(false, true) }
+    };
+  });
+
+  // セル結合：法要・人数列を同じ法要の行でマージ
+  let mergeStart = R_START;
+  rows.forEach((row, i) => {
+    if (row.isLast) {
+      const mergeEnd = R_START + i;
+      if (mergeEnd > mergeStart) {
+        merges.push({ s: { r: mergeStart, c: COL.ev },    e: { r: mergeEnd, c: COL.ev } });
+        merges.push({ s: { r: mergeStart, c: COL.count }, e: { r: mergeEnd, c: COL.count } });
+      }
+      mergeStart = mergeEnd + 1;
+    }
+  });
+
+  ws['!merges'] = merges;
+
+  // 列幅
+  ws['!cols'] = [
+    { wch: 38 }, // 法要
+    { wch: 6  }, // 人数
+    { wch: 18 }, // 名前
+    { wch: 12 }, // 言語
+    { wch: 30 }, // コメント
+  ];
+
+  // 行高
+  ws['!rows'] = [{ hpt: 20 }]; // ヘッダー
+  rows.forEach((_, i) => { ws['!rows'][R_START + i] = { hpt: 18 }; });
+
+  // 範囲
+  ws['!ref'] = XLSX.utils.encode_range({
+    s: { r: 0, c: 0 },
+    e: { r: R_START + rows.length - 1, c: 4 }
+  });
+
+  const month = document.getElementById('hdr-period')?.textContent || '参座者一覧';
+  XLSX.utils.book_append_sheet(wb, ws, '参座者一覧');
+  XLSX.writeFile(wb, month + '_参座者一覧.xlsx');
 }
 
 function showToast(msg) {
