@@ -1032,31 +1032,29 @@ function downloadExcel() {
   const ws = {};
 
   // ヘッダー定義
-  const headers = ['法要', '人数', '名前', '言語', 'コメント'];
+  const headers = ['精舎', '法要名', '人数', '名前', '言語', 'コメント'];
 
   // 寺・法要ごとに参座者を集計
-  const rows = []; // {eventLabel, count, name, language, notes}
+  const rows = [];
   const allEventsOrdered = [...TEMPLES.t1.events, ...TEMPLES.t2.events];
 
   allEventsOrdered.forEach(ev => {
     const tname = ev.id.startsWith('t1') ? '中京本部' : '名古屋支部';
-    const evLabel = tname + ' ' + ev.day + '日 ' + ev.name.ja + ' ' + ev.time;
-    // この法要に参座する人を言語でソート
+    const evName = ev.name.ja + ' ' + ev.time;
     const attendees = bookings
       .filter(b => b.eventIds && b.eventIds.includes(ev.id))
       .sort((a, b) => (a.language || '').localeCompare(b.language || '', 'ja'));
     if (!attendees.length) return;
     attendees.forEach((b, i) => {
       rows.push({
-        eventLabel: i === 0 ? evLabel : '',   // 最初の行のみ法要名
-        countLabel: i === 0 ? attendees.length : '', // 最初の行のみ人数
+        tname,
+        evName,
         count: attendees.length,
         name: b.name,
         language: b.language || '',
         notes: b.notes || '',
         isFirst: i === 0,
         isLast: i === attendees.length - 1,
-        evLabel,
       });
     });
   });
@@ -1064,8 +1062,8 @@ function downloadExcel() {
   if (!rows.length) { showToast('参座者データがありません'); return; }
 
   // セルデータを書き込む
-  const R_START = 1; // 0-indexed: row 0 = header
-  const COL = { ev: 0, count: 1, name: 2, lang: 3, notes: 4 };
+  const R_START = 1;
+  const COL = { temple: 0, ev: 1, count: 2, name: 3, lang: 4, notes: 5 };
 
   // ヘッダー
   headers.forEach((h, c) => {
@@ -1090,9 +1088,8 @@ function downloadExcel() {
   const merges = [];
   rows.forEach((row, i) => {
     const r = R_START + i;
-    const isGroupBorder = row.isLast;
-    const bottomStyle = isGroupBorder ? 'medium' : 'thin';
-    const bottomColor = isGroupBorder ? '2A2520' : 'C8B89A';
+    const bottomStyle = row.isLast ? 'medium' : 'thin';
+    const bottomColor = row.isLast ? '2A2520' : 'C8B89A';
 
     const baseBorder = (isLeft, isRight) => ({
       top:    { style: 'thin',   color: { rgb: 'C8B89A' } },
@@ -1101,10 +1098,15 @@ function downloadExcel() {
       right:  { style: isRight ? 'medium' : 'thin', color: { rgb: isRight ? '2A2520' : 'C8B89A' } },
     });
 
-    // 法要列
+    // 精舎列
+    ws[XLSX.utils.encode_cell({r, c: COL.temple})] = {
+      v: row.isFirst ? row.tname : '', t: 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { horizontal: 'center', vertical: 'top', wrapText: true }, border: baseBorder(true, false) }
+    };
+    // 法要名列
     ws[XLSX.utils.encode_cell({r, c: COL.ev})] = {
-      v: row.isFirst ? row.evLabel : '', t: 's',
-      s: { font: { name: FONT, sz: 10 }, alignment: { vertical: 'top', wrapText: true }, border: baseBorder(true, false) }
+      v: row.isFirst ? row.evName : '', t: 's',
+      s: { font: { name: FONT, sz: 10 }, alignment: { vertical: 'top', wrapText: true }, border: baseBorder(false, false) }
     };
     // 人数列
     ws[XLSX.utils.encode_cell({r, c: COL.count})] = {
@@ -1128,14 +1130,15 @@ function downloadExcel() {
     };
   });
 
-  // セル結合：法要・人数列を同じ法要の行でマージ
+  // セル結合：精舎・法要名・人数列を同じ法要の行でマージ
   let mergeStart = R_START;
   rows.forEach((row, i) => {
     if (row.isLast) {
       const mergeEnd = R_START + i;
       if (mergeEnd > mergeStart) {
-        merges.push({ s: { r: mergeStart, c: COL.ev },    e: { r: mergeEnd, c: COL.ev } });
-        merges.push({ s: { r: mergeStart, c: COL.count }, e: { r: mergeEnd, c: COL.count } });
+        merges.push({ s: { r: mergeStart, c: COL.temple }, e: { r: mergeEnd, c: COL.temple } });
+        merges.push({ s: { r: mergeStart, c: COL.ev },     e: { r: mergeEnd, c: COL.ev } });
+        merges.push({ s: { r: mergeStart, c: COL.count },  e: { r: mergeEnd, c: COL.count } });
       }
       mergeStart = mergeEnd + 1;
     }
@@ -1145,7 +1148,8 @@ function downloadExcel() {
 
   // 列幅
   ws['!cols'] = [
-    { wch: 38 }, // 法要
+    { wch: 14 }, // 精舎
+    { wch: 30 }, // 法要名
     { wch: 6  }, // 人数
     { wch: 18 }, // 名前
     { wch: 12 }, // 言語
@@ -1153,13 +1157,13 @@ function downloadExcel() {
   ];
 
   // 行高
-  ws['!rows'] = [{ hpt: 20 }]; // ヘッダー
+  ws['!rows'] = [{ hpt: 20 }];
   rows.forEach((_, i) => { ws['!rows'][R_START + i] = { hpt: 18 }; });
 
   // 範囲
   ws['!ref'] = XLSX.utils.encode_range({
     s: { r: 0, c: 0 },
-    e: { r: R_START + rows.length - 1, c: 4 }
+    e: { r: R_START + rows.length - 1, c: 5 }
   });
 
   const month = document.getElementById('hdr-period')?.textContent || '参座者一覧';
