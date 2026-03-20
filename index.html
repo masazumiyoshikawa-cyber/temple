@@ -911,15 +911,11 @@ async function confirmAdminLogin() {
     const pw = document.getElementById('adminPwInput').value;
     if (!pw) { errEl.textContent = 'パスワードを入力してください。'; return; }
     try {
-      const hash = await sha256(pw);
-      console.log('Input hash:', hash);
+      const hash = await sha256(pw.trim().normalize('NFC'));
       const res  = await fetch(SUPABASE_URL + '/rest/v1/app_config?key=eq.admin_password_hash&select=value', {
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
       });
       const data = await res.json();
-      console.log('DB data:', JSON.stringify(data));
-      console.log('DB hash:', data[0]?.value);
-      console.log('Match:', data.length > 0 && data[0].value === hash);
       if (!data.length || data[0].value !== hash) {
         errEl.textContent = 'パスワードが正しくありません。';
         document.getElementById('adminPwInput').value = '';
