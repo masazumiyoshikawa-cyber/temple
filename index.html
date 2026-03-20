@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>法要 ご参座予約</title>
+<title>法要 参座予約</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&family=Noto+Sans+JP:wght@300;400&family=Noto+Serif+SC:wght@300;400&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
@@ -305,7 +305,7 @@ tr:hover td{background:var(--paper-warm);}
 // ── I18N ──
 const I18N = {
   ja: {
-    title: '法要 ご参座予約',
+    title: '法要 参座予約',
     period: '令和八年 三月',
     nav: ['ご予約', '参座者', '管理'],
     secSelect: '法要をお選びください',
@@ -322,7 +322,7 @@ const I18N = {
     confirmTitle: 'ご予約が完了しました',
     confirmNote: '確認のご連絡をお送りいたします（デモ）',
     resetBtn: '予約のやり直しへ',
-    secListTitle: 'ご参座者一覧',
+    secListTitle: '参座者一覧',
     secAdminTitle: '管理画面',
     filterAll: 'すべて',
     listEmpty: 'まだご予約はございません',
@@ -878,7 +878,7 @@ function sendConfirmEmail(b, evLines, isUpdate) {
     en: isUpdate ? '[Reservation Updated] Service' : '[Reservation Confirmed] Service',
   };
   const bodies = {
-    ja: `${b.name} 様\n\n${isUpdate ? '以下の内容でご予約を更新いたしました。' : '以下の法要のご参座予約が完了いたしました。'}\n\n${evLines.join('\n')}\n\n言語：${b.language}${b.notes ? '\nご伝言：' + b.notes : ''}\n\n当日のご参座をお待ちしております。\n中京本部 / 名古屋支部`,
+    ja: `${b.name} 様\n\n${isUpdate ? '以下の内容でご予約を更新いたしました。' : '以下の法要の参座予約が完了いたしました。'}\n\n${evLines.join('\n')}\n\n言語：${b.language}${b.notes ? '\nご伝言：' + b.notes : ''}\n\n当日の参座をお待ちしております。\n中京本部 / 名古屋支部`,
     zh: `${b.name}\n\n${isUpdate ? '以下法会的参座预约已更新。' : '以下法会的参座预约已确认。'}\n\n${evLines.join('\n')}\n\n语言：${b.language}${b.notes ? '\n留言：' + b.notes : ''}\n\n期待您的到来。\n中京本部 / 名古屋支部`,
     en: `Dear ${b.name},\n\n${isUpdate ? 'Your reservation has been updated as follows.' : 'Your reservation for the following service(s) has been confirmed.'}\n\n${evLines.join('\n')}\n\nLanguage: ${b.language}${b.notes ? '\nMessage: ' + b.notes : ''}\n\nWe look forward to welcoming you.\nChukyo Headquarters / Nagoya Branch`,
   };
