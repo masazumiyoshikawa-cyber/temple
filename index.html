@@ -211,18 +211,37 @@ tr:hover td{background:var(--paper-warm);}
 <div id="adminOverlay" style="display:none;position:fixed;inset:0;background:rgba(26,22,18,0.72);z-index:200;align-items:center;justify-content:center;">
   <div style="background:var(--card);border:1px solid var(--border-mid);border-radius:var(--radius);padding:2rem;width:320px;max-width:calc(100vw - 2rem);text-align:center;">
     <div style="font-family:'Noto Serif JP','Noto Serif SC',serif;font-size:0.88rem;letter-spacing:0.18em;color:var(--ink);margin-bottom:1.25rem;" id="overlay-title">管理者ログイン</div>
-    <div class="form-group" style="text-align:left;margin-bottom:0.75rem;">
-      <label style="font-size:0.72rem;color:var(--ink-mid);" id="overlay-lbl-email">メールアドレス</label>
-      <input type="email" id="adminEmailInput" style="width:100%;padding:9px 12px;border:1px solid var(--border-mid);border-radius:var(--radius);background:var(--paper);color:var(--ink);font-size:1rem;outline:none;" placeholder="admin@example.com">
+
+    <!-- モード切替タブ -->
+    <div style="display:flex;border:1px solid var(--border-mid);border-radius:var(--radius);overflow:hidden;margin-bottom:1.25rem;">
+      <button id="mode-general" onclick="setLoginMode('general')" style="flex:1;padding:7px;font-size:0.72rem;border:none;cursor:pointer;background:var(--ink);color:rgba(255,255,255,0.85);font-family:inherit;letter-spacing:0.06em;">一般管理者</button>
+      <button id="mode-super" onclick="setLoginMode('super')" style="flex:1;padding:7px;font-size:0.72rem;border:none;cursor:pointer;background:none;color:var(--ink-mid);font-family:inherit;letter-spacing:0.06em;">スーパーユーザー</button>
     </div>
-    <div class="form-group" style="text-align:left;">
-      <label style="font-size:0.72rem;color:var(--ink-mid);" id="overlay-lbl-pw">パスワード</label>
-      <input type="password" id="adminPwInput" style="width:100%;padding:9px 12px;border:1px solid var(--border-mid);border-radius:var(--radius);background:var(--paper);color:var(--ink);font-size:1rem;outline:none;letter-spacing:0.1em;" placeholder="••••••" onkeydown="if(event.key==='Enter')confirmAdminLogin()">
+
+    <!-- 一般管理者：パスワードのみ -->
+    <div id="login-general">
+      <div class="form-group" style="text-align:left;">
+        <label style="font-size:0.72rem;color:var(--ink-mid);">パスワード</label>
+        <input type="password" id="adminPwInput" style="width:100%;padding:9px 12px;border:1px solid var(--border-mid);border-radius:var(--radius);background:var(--paper);color:var(--ink);font-size:1rem;outline:none;letter-spacing:0.1em;" placeholder="••••••" onkeydown="if(event.key==='Enter')confirmAdminLogin()">
+      </div>
     </div>
+
+    <!-- スーパーユーザー：メール＋パスワード -->
+    <div id="login-super" style="display:none;">
+      <div class="form-group" style="text-align:left;margin-bottom:0.75rem;">
+        <label style="font-size:0.72rem;color:var(--ink-mid);">メールアドレス</label>
+        <input type="email" id="adminEmailInput" style="width:100%;padding:9px 12px;border:1px solid var(--border-mid);border-radius:var(--radius);background:var(--paper);color:var(--ink);font-size:1rem;outline:none;" placeholder="admin@example.com">
+      </div>
+      <div class="form-group" style="text-align:left;">
+        <label style="font-size:0.72rem;color:var(--ink-mid);">パスワード</label>
+        <input type="password" id="adminSuperPwInput" style="width:100%;padding:9px 12px;border:1px solid var(--border-mid);border-radius:var(--radius);background:var(--paper);color:var(--ink);font-size:1rem;outline:none;letter-spacing:0.1em;" placeholder="••••••" onkeydown="if(event.key==='Enter')confirmAdminLogin()">
+      </div>
+    </div>
+
     <div id="overlay-err" style="color:var(--danger);font-size:0.72rem;margin-top:6px;min-height:1rem;text-align:left;"></div>
     <div style="display:flex;gap:8px;margin-top:1rem;">
-      <button onclick="cancelAdminLogin()" style="flex:1;padding:9px;background:none;border:1px solid var(--border-mid);border-radius:var(--radius);cursor:pointer;font-size:0.78rem;color:var(--ink-mid);font-family:inherit;" id="overlay-cancel">キャンセル</button>
-      <button onclick="confirmAdminLogin()" style="flex:1;padding:9px;background:var(--ink);color:rgba(255,255,255,0.85);border:none;border-radius:var(--radius);cursor:pointer;font-size:0.78rem;font-family:inherit;" id="overlay-ok">ログイン</button>
+      <button onclick="cancelAdminLogin()" style="flex:1;padding:9px;background:none;border:1px solid var(--border-mid);border-radius:var(--radius);cursor:pointer;font-size:0.78rem;color:var(--ink-mid);font-family:inherit;">キャンセル</button>
+      <button onclick="confirmAdminLogin()" style="flex:1;padding:9px;background:var(--ink);color:rgba(255,255,255,0.85);border:none;border-radius:var(--radius);cursor:pointer;font-size:0.78rem;font-family:inherit;">ログイン</button>
     </div>
   </div>
 </div>
@@ -826,10 +845,23 @@ function delBooking(email) {
   });
 }
 
-// ── ADMIN AUTH (Supabase) ──
-let isAdminAuthed = false;
+// ── ADMIN AUTH ──
+let isAdminAuthed = false;   // 一般管理者 or スーパーユーザー
+let isSuperUser   = false;   // スーパーユーザーのみ true
 let supabaseSession = null;
 let pendingTab = null;
+let currentLoginMode = 'general';
+
+function setLoginMode(mode) {
+  currentLoginMode = mode;
+  document.getElementById('login-general').style.display  = mode === 'general' ? 'block' : 'none';
+  document.getElementById('login-super').style.display    = mode === 'super'   ? 'block' : 'none';
+  document.getElementById('mode-general').style.background = mode === 'general' ? 'var(--ink)' : 'none';
+  document.getElementById('mode-general').style.color      = mode === 'general' ? 'rgba(255,255,255,0.85)' : 'var(--ink-mid)';
+  document.getElementById('mode-super').style.background   = mode === 'super'   ? 'var(--ink)' : 'none';
+  document.getElementById('mode-super').style.color        = mode === 'super'   ? 'rgba(255,255,255,0.85)' : 'var(--ink-mid)';
+  document.getElementById('overlay-err').textContent = '';
+}
 
 function switchTab(tab) {
   if ((tab === 'list' || tab === 'admin') && !isAdminAuthed) {
@@ -847,43 +879,81 @@ function _doSwitchTab(tab) {
   ['form','list','admin'].forEach((name, i) => {
     if (name === tab) document.querySelectorAll('.nav-item')[i].classList.add('active');
   });
+  // パスワード変更ボタンはスーパーユーザーのみ表示
+  const pwBtn = document.getElementById('btn-pw-change');
+  if (pwBtn) pwBtn.style.display = isSuperUser ? 'inline-block' : 'none';
   if (tab === 'list') renderList();
   if (tab === 'admin') renderAdmin();
 }
 
 function showAdminOverlay() {
-  document.getElementById('adminEmailInput').value = '';
+  setLoginMode('general');
   document.getElementById('adminPwInput').value = '';
+  document.getElementById('adminEmailInput').value = '';
+  document.getElementById('adminSuperPwInput').value = '';
   document.getElementById('overlay-err').textContent = '';
   document.getElementById('adminOverlay').style.display = 'flex';
-  setTimeout(() => document.getElementById('adminEmailInput').focus(), 50);
+  setTimeout(() => document.getElementById('adminPwInput').focus(), 50);
+}
+
+// SHA-256ハッシュ（Web Crypto API）
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
 async function confirmAdminLogin() {
-  const email = document.getElementById('adminEmailInput').value.trim();
-  const pw    = document.getElementById('adminPwInput').value;
   const errEl = document.getElementById('overlay-err');
-  if (!email || !pw) { errEl.textContent = 'メールアドレスとパスワードを入力してください。'; return; }
+  errEl.textContent = '';
 
-  try {
-    const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pw }),
-    });
-    const data = await res.json();
-    if (!res.ok || !data.access_token) {
-      const msgs = { ja: 'メールアドレスまたはパスワードが正しくありません', zh: '邮箱或密码错误', en: 'Invalid email or password' };
-      errEl.textContent = msgs[currentLang] || msgs.ja;
-      document.getElementById('adminPwInput').value = '';
-      return;
+  if (currentLoginMode === 'general') {
+    // ── 一般管理者：パスワードをSHA-256してSupabaseのapp_configと照合 ──
+    const pw = document.getElementById('adminPwInput').value;
+    if (!pw) { errEl.textContent = 'パスワードを入力してください。'; return; }
+    try {
+      const hash = await sha256(pw);
+      const res  = await fetch(SUPABASE_URL + '/rest/v1/app_config?key=eq.admin_password_hash&select=value', {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      });
+      const data = await res.json();
+      if (!data.length || data[0].value !== hash) {
+        errEl.textContent = 'パスワードが正しくありません。';
+        document.getElementById('adminPwInput').value = '';
+        return;
+      }
+      isAdminAuthed = true;
+      isSuperUser   = false;
+      document.getElementById('adminOverlay').style.display = 'none';
+      if (pendingTab) { _doSwitchTab(pendingTab); pendingTab = null; }
+    } catch(e) {
+      errEl.textContent = 'ネットワークエラーが発生しました。';
     }
-    supabaseSession = data;
-    isAdminAuthed = true;
-    document.getElementById('adminOverlay').style.display = 'none';
-    if (pendingTab) { _doSwitchTab(pendingTab); pendingTab = null; }
-  } catch(e) {
-    errEl.textContent = 'ネットワークエラーが発生しました。';
+
+  } else {
+    // ── スーパーユーザー：Supabase Auth ──
+    const email = document.getElementById('adminEmailInput').value.trim();
+    const pw    = document.getElementById('adminSuperPwInput').value;
+    if (!email || !pw) { errEl.textContent = 'メールアドレスとパスワードを入力してください。'; return; }
+    try {
+      const res  = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pw }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.access_token) {
+        errEl.textContent = 'メールアドレスまたはパスワードが正しくありません。';
+        document.getElementById('adminSuperPwInput').value = '';
+        return;
+      }
+      supabaseSession = data;
+      isAdminAuthed = true;
+      isSuperUser   = true;
+      document.getElementById('adminOverlay').style.display = 'none';
+      if (pendingTab) { _doSwitchTab(pendingTab); pendingTab = null; }
+    } catch(e) {
+      errEl.textContent = 'ネットワークエラーが発生しました。';
+    }
   }
 }
 
@@ -894,12 +964,14 @@ function cancelAdminLogin() {
 
 function adminLogout() {
   isAdminAuthed = false;
+  isSuperUser   = false;
   supabaseSession = null;
   _doSwitchTab('form');
   showToast('ログアウトしました');
 }
 
 function openPwChangeModal() {
+  if (!isSuperUser) return;
   document.getElementById('pwNewInput').value = '';
   document.getElementById('pwConfirmInput').value = '';
   document.getElementById('pwchange-err').textContent = '';
@@ -915,23 +987,25 @@ async function submitPwChange() {
   const newPw  = document.getElementById('pwNewInput').value;
   const confPw = document.getElementById('pwConfirmInput').value;
   const errEl  = document.getElementById('pwchange-err');
-  if (newPw.length < 8) { errEl.textContent = 'パスワードは8文字以上にしてください。'; return; }
-  if (newPw !== confPw) { errEl.textContent = 'パスワードが一致しません。'; return; }
-  if (!supabaseSession?.access_token) { errEl.textContent = '再度ログインしてください。'; return; }
+  if (newPw.length < 6) { errEl.textContent = 'パスワードは6文字以上にしてください。'; return; }
+  if (newPw !== confPw)  { errEl.textContent = 'パスワードが一致しません。'; return; }
 
   try {
-    const res = await fetch(SUPABASE_URL + '/auth/v1/user', {
-      method: 'PUT',
+    const hash = await sha256(newPw);
+    // app_config の admin_password_hash を更新
+    const res = await fetch(SUPABASE_URL + '/rest/v1/app_config?key=eq.admin_password_hash', {
+      method: 'PATCH',
       headers: {
         'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + supabaseSession.access_token,
+        'Authorization': 'Bearer ' + (supabaseSession?.access_token || SUPABASE_KEY),
         'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
       },
-      body: JSON.stringify({ password: newPw }),
+      body: JSON.stringify({ value: hash }),
     });
     if (!res.ok) { errEl.textContent = 'パスワードの変更に失敗しました。'; return; }
     closePwChangeModal();
-    showToast('パスワードを変更しました');
+    showToast('一般管理者のパスワードを変更しました');
   } catch(e) {
     errEl.textContent = 'ネットワークエラーが発生しました。';
   }
