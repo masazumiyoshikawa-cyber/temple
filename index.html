@@ -43,6 +43,12 @@ nav{background:var(--ink);border-top:1px solid rgba(255,255,255,0.07);display:fl
 .sec-rule::after{content:'◆';position:absolute;left:50%;transform:translateX(-50%) translateY(-50%);background:var(--paper);padding:0 8px;font-size:7px;color:var(--gold);}
 
 .month-label{font-size:0.7rem;color:var(--ink-faint);letter-spacing:0.12em;margin-bottom:0.75rem;padding-left:2px;}
+.notice-box{background:var(--paper-warm);border:1px solid rgba(139,115,85,0.3);border-left:3px solid var(--gold);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.25rem;}
+.notice-title{font-family:'Noto Serif JP','Noto Serif SC',serif;font-size:0.75rem;color:var(--gold-dark);letter-spacing:0.12em;margin-bottom:0.6rem;}
+.notice-list{list-style:none;display:flex;flex-direction:column;gap:0.5rem;}
+.notice-list li{font-size:0.78rem;color:var(--ink-mid);line-height:1.75;padding-left:1em;position:relative;}
+.notice-list li::before{content:'*';position:absolute;left:0;color:var(--gold);}
+.notice-list a{color:var(--gold-dark);text-decoration:underline;text-underline-offset:2px;}
 .temple-tabs{display:flex;gap:0;margin-bottom:1rem;border-bottom:1px solid var(--border-mid);}
 .temple-tab{padding:0.6rem 1.5rem;font-family:'Noto Serif JP','Noto Serif SC',serif;font-size:0.78rem;letter-spacing:0.15em;color:var(--ink-faint);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.18s;}
 .temple-tab:hover{color:var(--ink-mid);}
@@ -222,6 +228,12 @@ tr:hover td{background:var(--paper-warm);}
       <div class="sec-rule"></div>
     </div>
     <div class="month-label" id="month-label"></div>
+
+    <div class="notice-box" id="notice-box">
+      <div class="notice-title" id="notice-title"></div>
+      <ul class="notice-list" id="notice-list"></ul>
+    </div>
+
     <div class="temple-tabs">
       <div class="temple-tab active" id="ttab-t1" onclick="switchTemple('t1')">中京本部</div>
       <div class="temple-tab" id="ttab-t2" onclick="switchTemple('t2')">名古屋支部</div>
@@ -339,6 +351,12 @@ const I18N = {
     errEmail: '有効なメールアドレスをご入力ください。',
     errLang: '言語をお選びください。',
     wds: ['日','月','火','水','木','金','土'],
+    noticeTitle: 'ご注意',
+    notices: [
+      'GLADでは中京本部および名古屋支部において言語サポートをしています。帰苑の10日前までにこのフォームにご回答のうえ、サービスをリクエストしてください。',
+      'GLADは接心中の言語サポートをご提供することができませんのでご承知おきください。接心をいただく際は日本語のわかる導き親、経親、育て親、預かり親、またはご家族の付き添いが必要です。',
+      '相談以上の接心を受ける場合は、ここでの言語サポートのリクエストのほかに、別途、<a href="https://www.shinnyoen.jp" target="_blank">真如苑予約サイト</a>で接心予約が必要になります。',
+    ],
   },
   zh: {
     title: '法会 参座预约',
@@ -375,6 +393,12 @@ const I18N = {
     errEmail: '请填写有效的电子邮箱。',
     errLang: '请选择语言。',
     wds: ['日','月','火','水','木','金','土'],
+    noticeTitle: '注意事项',
+    notices: [
+      'GLAD在中京本部和名古屋支部提供语言支持服务。请在回苑前10天内填写此表格申请服务。',
+      '请注意，GLAD无法在接心期间提供语言支持。接受接心时，需要有懂日语的引导亲、经亲、育亲、托亲或家属陪同。',
+      '若接受相谈以上的接心，除在此申请语言支持外，还需另行在<a href="https://www.shinnyoen.jp" target="_blank">真如苑预约网站</a>预约接心。',
+    ],
   },
   en: {
     title: 'Service Reservation',
@@ -411,6 +435,12 @@ const I18N = {
     errEmail: 'Please enter a valid email address.',
     errLang: 'Please select a language.',
     wds: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    noticeTitle: 'Important Notice',
+    notices: [
+      'GLAD provides language support at both the Chukyo Headquarters and Nagoya Branch. Please complete this form at least 10 days before your visit to request support.',
+      'Please note that GLAD is unable to provide language support during sesshin. When receiving sesshin, you must be accompanied by a guide parent, sutra parent, nurturing parent, foster parent, or family member who understands Japanese.',
+      'If you are receiving sesshin beyond consultation level, in addition to requesting language support here, you must also make a separate sesshin reservation at the <a href="https://www.shinnyoen.jp" target="_blank">Shinnyo-en Reservation Site</a>.',
+    ],
   },
 };
 
@@ -518,6 +548,9 @@ function applyI18n() {
     document.getElementById('lastName').placeholder = '山田';
     document.getElementById('firstName').placeholder = '花子';
   }
+  // 注意事項
+  document.getElementById('notice-title').textContent = L.noticeTitle;
+  document.getElementById('notice-list').innerHTML = L.notices.map(n => '<li>' + n + '</li>').join('');
 }
 
 // ── TEMPLES ──
