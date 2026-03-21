@@ -1361,52 +1361,43 @@ function renderMonthNav() {
 // 本番環境では下の関数を呼ばないでください
 function loadSampleData() {
   bookings = [
-    {
-      id: 1, name: '山田 花子', email: 'hanako@example.com',
-      language: '日本語', notes: '',
-      eventIds: ['t1e01','t1e03','t2e01'],
-      events: '中京本部 2日 一如祈念 19:00 / 中京本部 11日 正輪会 10:30 / 名古屋支部 4日 廻向法要 10:30',
-      at: '2026/03/01 10:00:00', status: '新規',
-    },
-    {
-      id: 2, name: 'John Smith', email: 'john@example.com',
-      language: 'English', notes: 'First time attendee',
-      eventIds: ['t1e01','t2e02'],
-      events: '中京本部 2日 一如祈念 19:00 / 名古屋支部 7日 一如祈念 10:30',
-      at: '2026/03/02 11:30:00', status: '新規',
-    },
-    {
-      id: 3, name: '李 明', email: 'liming@example.com',
-      language: '中文', notes: '需要中文翻译',
-      eventIds: ['t1e03','t2e04'],
-      events: '中京本部 11日 正輪会 10:30 / 名古屋支部 11日 正輪会 10:30',
-      at: '2026/03/03 09:15:00', status: '新規',
-    },
-    {
-      id: 4, name: '鈴木 一郎', email: 'ichiro@example.com',
-      language: '日本語', notes: '車椅子対応をお願いします',
-      eventIds: ['t1e01','t1e04','t2e01'],
-      events: '中京本部 2日 一如祈念 19:00 / 中京本部 15日 常楽会 10:30 / 名古屋支部 4日 廻向法要 10:30',
-      at: '2026/03/03 14:00:00', status: '新規',
-    },
-    {
-      id: 5, name: 'Kim Ji-yeon', email: 'jiyeon@example.com',
-      language: 'English', notes: '',
-      eventIds: ['t2e03'],
-      events: '名古屋支部 8日 弁才天様法楽法要 10:30',
-      at: '2026/03/04 08:45:00', status: '新規',
-    },
-    {
-      id: 6, name: '田中 さくら', email: 'sakura@example.com',
-      language: '日本語', notes: '',
-      eventIds: ['t1e03','t1e05'],
-      events: '中京本部 11日 正輪会 10:30 / 中京本部 19日 法翔会（午前） 10:30',
-      at: '2026/03/05 16:20:00', status: '新規',
-    },
+    // 過去の法要
+    { id: 1,  name: '山田 花子',     email: 'hanako@example.com',    language: '日本語', notes: '',                    eventIds: ['t1e01','t1e03','t2e01'], events: '', at: '2026/03/01 10:00:00', status: '新規' },
+    { id: 2,  name: 'John Smith',    email: 'john@example.com',       language: 'English', notes: 'First time attendee', eventIds: ['t1e01','t2e02'],         events: '', at: '2026/03/02 11:30:00', status: '新規' },
+    { id: 3,  name: '李 明',         email: 'liming@example.com',     language: '中文',    notes: '需要中文翻译',        eventIds: ['t1e03','t2e04'],         events: '', at: '2026/03/03 09:15:00', status: '新規' },
+    { id: 4,  name: '鈴木 一郎',     email: 'ichiro@example.com',     language: '日本語', notes: '車椅子対応をお願いします', eventIds: ['t1e01','t1e04','t2e01'], events: '', at: '2026/03/03 14:00:00', status: '新規' },
+    { id: 5,  name: 'Kim Ji-yeon',   email: 'jiyeon@example.com',     language: 'English', notes: '',                    eventIds: ['t2e03'],                 events: '', at: '2026/03/04 08:45:00', status: '新規' },
+    { id: 6,  name: '田中 さくら',   email: 'sakura@example.com',     language: '日本語', notes: '',                    eventIds: ['t1e03','t1e05'],         events: '', at: '2026/03/05 16:20:00', status: '新規' },
+    { id: 7,  name: '陳 淑芬',       email: 'chenshufen@example.com', language: '中文',    notes: '请安排普通话翻译',    eventIds: ['t1e04','t2e06'],         events: '', at: '2026/03/06 10:05:00', status: '新規' },
+    { id: 8,  name: 'Maria Santos',  email: 'maria@example.com',      language: 'English', notes: '',                    eventIds: ['t2e03','t2e04'],         events: '', at: '2026/03/07 13:40:00', status: '新規' },
+    { id: 9,  name: '佐藤 健二',     email: 'kenji@example.com',      language: '日本語', notes: '',                    eventIds: ['t1e05','t1e06'],         events: '', at: '2026/03/08 09:00:00', status: '新規' },
+    { id: 10, name: '林 芳美',       email: 'yoshimi@example.com',    language: '日本語', notes: '子連れです',          eventIds: ['t1e07','t1e08'],         events: '', at: '2026/03/10 15:30:00', status: '新規' },
+    { id: 11, name: 'David Chen',    email: 'davidchen@example.com',  language: 'English', notes: 'Please confirm.',     eventIds: ['t1e07','t2e10'],         events: '', at: '2026/03/11 08:50:00', status: '新規' },
+    { id: 12, name: '王 建国',       email: 'wangjg@example.com',     language: '中文',    notes: '',                    eventIds: ['t2e08','t2e09'],         events: '', at: '2026/03/12 11:10:00', status: '新規' },
+    // 翌日以降の法要（予約可能）
+    { id: 13, name: '高橋 美穂',     email: 'miho@example.com',       language: '日本語', notes: '',                    eventIds: ['t1e09','t2e07'],         events: '', at: '2026/03/15 10:00:00', status: '新規' },
+    { id: 14, name: 'Sophie Müller', email: 'sophie@example.com',     language: 'English', notes: '',                    eventIds: ['t1e10'],                 events: '', at: '2026/03/16 14:20:00', status: '新規' },
+    { id: 15, name: '中村 拓也',     email: 'takuya@example.com',     language: '日本語', notes: 'よろしくお願いします', eventIds: ['t1e10','t1e11','t2e12'], events: '', at: '2026/03/17 09:30:00', status: '新規' },
+    { id: 16, name: '张 伟',         email: 'zhangwei@example.com',   language: '中文',    notes: '我需要翻译帮助',      eventIds: ['t1e11','t2e13'],         events: '', at: '2026/03/18 16:45:00', status: '新規' },
+    { id: 17, name: 'Emily Parker',  email: 'emily@example.com',      language: 'English', notes: 'Thank you.',          eventIds: ['t1e12','t2e14'],         events: '', at: '2026/03/19 08:00:00', status: '新規' },
+    { id: 18, name: '小林 恵子',     email: 'keiko@example.com',      language: '日本語', notes: '',                    eventIds: ['t1e13','t1e14'],         events: '', at: '2026/03/19 10:15:00', status: '新規' },
+    { id: 19, name: '黄 志强',       email: 'huangzq@example.com',    language: '中文',    notes: '',                    eventIds: ['t2e15','t2e16'],         events: '', at: '2026/03/20 11:00:00', status: '新規' },
+    { id: 20, name: 'James Tanaka',  email: 'james@example.com',      language: 'English', notes: 'Need English support', eventIds: ['t1e13','t2e15'],         events: '', at: '2026/03/20 13:30:00', status: '新規' },
   ];
+  // eventsフィールドを自動生成
+  const evMap = {};
+  [...TEMPLES.t1.events, ...TEMPLES.t2.events].forEach(ev => { evMap[ev.id] = ev; });
+  bookings.forEach(b => {
+    b.events = b.eventIds.map(id => {
+      const ev = evMap[id];
+      if (!ev) return id;
+      const t = id.startsWith('t1') ? '中京本部' : '名古屋支部';
+      return t + ' ' + ev.day + '日 ' + ev.name.ja + ' ' + ev.time;
+    }).join(' / ');
+  });
   renderList();
   renderAdmin();
-  showToast('サンプルデータを読み込みました');
+  showToast('サンプルデータを読み込みました（20件）');
 }
 
 </script>
