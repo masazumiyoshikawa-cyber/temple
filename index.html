@@ -114,6 +114,7 @@ textarea{resize:vertical;min-height:68px;}
 .att-split-head{font-size:0.72rem;font-weight:600;letter-spacing:0.1em;padding:5px 10px;border-radius:var(--radius);margin-bottom:6px;text-align:center;}
 .att-split-head.attend{background:var(--gold-light);color:var(--gold-dark);}
 .att-split-head.serve{background:rgba(31,62,100,0.08);color:#1f3e64;}
+.lang-alert{color:var(--danger);font-weight:600;}
 @media(max-width:600px){.att-split{grid-template-columns:1fr;gap:0.5rem;}}
 
 .list-filter{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1.25rem;}
@@ -318,7 +319,6 @@ tr:hover td{background:var(--paper-warm);}
           <label id="lbl-lang"></label>
           <select id="language">
             <option value="" id="lang-placeholder"></option>
-            <option value="日本語">日本語</option>
             <option value="中文">中文</option>
             <option value="English">English</option>
             <option value="その他 / Other">その他 / Other</option>
@@ -439,7 +439,7 @@ const I18N = {
     confirmTitle: 'ご予約が完了しました',
     confirmNote: '確認のご連絡をお送りいたします（デモ）',
     resetBtn: '予約のやり直しへ',
-    secListTitle: '参座者一覧',
+    secListTitle: '参座・ご奉仕者',
     secAdminTitle: '管理画面',
     filterAll: 'すべて',
     listEmpty: 'まだご予約はございません',
@@ -486,7 +486,7 @@ const I18N = {
     confirmTitle: '预约已完成',
     confirmNote: '确认邮件将发送给您（演示）',
     resetBtn: '重新预约',
-    secListTitle: '参座者名单',
+    secListTitle: '参座者·奉仕者',
     secAdminTitle: '管理页面',
     filterAll: '全部',
     listEmpty: '暂无预约',
@@ -533,7 +533,7 @@ const I18N = {
     confirmTitle: 'Reservation Complete',
     confirmNote: 'A confirmation email will be sent (demo)',
     resetBtn: 'Start over',
-    secListTitle: 'Attendee List',
+    secListTitle: 'Attendees & Volunteers',
     secAdminTitle: 'Admin Dashboard',
     filterAll: 'All',
     listEmpty: 'No reservations yet',
@@ -613,6 +613,14 @@ function sortedEvents() {
     if (a._tid !== b._tid) return a._tid < b._tid ? -1 : 1;
     return (a.time || '').localeCompare(b.time || '');
   });
+}
+
+// 同じ法要・同じ言語で参座者がいるのにご奉仕者がいない → true（要アラート）
+function needsCoverage(evId, language) {
+  const evB = bookings.filter(b => b.eventIds && b.eventIds.includes(evId));
+  const hasAttend = evB.some(b => (b.role||'参座') === '参座' && b.language === language);
+  const hasServe  = evB.some(b => b.role === '奉仕' && b.language === language);
+  return hasAttend && !hasServe;
 }
 
 let currentLang = 'ja';
@@ -769,21 +777,36 @@ function submitForm() {
   if (!lang) { showErr(L.errLang); return; }
   document.getElementById('errMsg').style.display = 'none';
   const now = new Date();
+
+  // 同じメールアドレスの既存予約を検索
+  const existing = bookings.find(bk => bk.email === email);
+  const isUpdate = !!existing;
+
+  // 既存予約の中から過去の法要IDだけ残す
+  const pastEventIds = existing
+    ? (existing.eventIds || []).filter(id => {
+        const ev = ALL_EVENTS.find(e => e.id === id);
+        return ev && isPast(ev);
+      })
+    : [];
+
+  // 新しく選択されたIDと過去IDをマージ（重複排除）
+  const mergedEventIds = [...new Set([...pastEventIds, ...selected])];
+
   const b = {
     id: Date.now(),
     lastName: last, firstName: first,
     name: currentLang === 'en' ? first + ' ' + last : last + ' ' + first,
     email, language: lang, role,
     notes: document.getElementById('notes').value.trim(),
-    eventIds: [...selected],
+    eventIds: mergedEventIds,
     at: now.toLocaleString(currentLang === 'en' ? 'en-US' : currentLang === 'zh' ? 'zh-CN' : 'ja-JP')
   };
-  // 同じメールアドレスの既存予約を削除して上書き
-  const isUpdate = bookings.some(bk => bk.email === email);
   bookings = bookings.filter(bk => bk.email !== email);
   bookings.push(b);
   const tname = {t1:'中京本部', t2:'名古屋支部'};
-  const evLines = b.eventIds.map(id => {
+  // 確認画面・メールには新しく選択した法要のみ表示
+  const evLines = [...selected].map(id => {
     const ev = ALL_EVENTS.find(e => e.id === id);
     return tname[id.slice(0,2)] + ' ' + ev.day + (wd(ev) ? '（' + wd(ev) + '）' : '') + ' ' + (ev.name[currentLang] || ev.name.ja);
   });
@@ -863,7 +886,15 @@ function renderList() {
       const colA = document.createElement('div');
       colA.className = 'att-split-col';
       colA.innerHTML = '<div class="att-split-head attend">' + L.colAttend + ' ' + attending.length + '名</div>';
-      attending.forEach((b, i) => colA.appendChild(makeAttItem(b, i)));
+      attending.forEach((b, i) => {
+        const alert = needsCoverage(ev.id, b.language);
+        const item = makeAttItem(b, i);
+        if (alert) {
+          const langEl = item.querySelector('.att-sub');
+          if (langEl) langEl.classList.add('lang-alert');
+        }
+        colA.appendChild(item);
+      });
       if (!attending.length) colA.innerHTML += '<div style="font-size:0.72rem;color:var(--ink-faint);padding:6px 0;text-align:center;">—</div>';
 
       const colS = document.createElement('div');
@@ -1199,6 +1230,7 @@ function downloadExcel() {
     langOrder.sort((a,b) => a.localeCompare(b, 'ja'));
 
     evGroups.push({
+      evId:     ev.id,
       dayStr:   ev.day + '日',
       wdStr:    ev.wd !== null && ev.wd !== undefined ? WD_JA[ev.wd] : '',
       tname:    ev._tid === 't1' ? '中京本部' : '名古屋支部',
@@ -1259,7 +1291,11 @@ function downloadExcel() {
 
         // 言語列（言語グループの最初の行のみ値）
         const isLangFirst = (ri === 0);
-        ws[XLSX.utils.encode_cell({r, c:COL.lang})] = { v: isLangFirst ? lng : '', t:'s', s:cs({ horizontal:'center', vertical:'top' }, false, false, isGroupLast) };
+        const langAlert = needsCoverage(grp.evId, lng);
+        const langFontColor = langAlert ? { rgb:'CC0000' } : (gFont ? { rgb:gFont } : undefined);
+        const langCellS = Object.assign({}, cs({ horizontal:'center', vertical:'top' }, false, false, isGroupLast));
+        langCellS.font = { name:FONT, sz:10, bold: langAlert, color: langFontColor };
+        ws[XLSX.utils.encode_cell({r, c:COL.lang})] = { v: isLangFirst ? lng : '', t:'s', s: langCellS };
 
         // 参座者列
         const a = attend[ri];
@@ -1445,27 +1481,27 @@ function renderMonthNav() {
 function loadSampleData() {
   bookings = [
     // 過去の法要
-    { id: 1,  name: '山田 花子',     email: 'hanako@example.com',    language: '日本語', role:'参座', notes: '',                     eventIds: ['t1e01','t1e03','t2e01'], events: '', at: '2026/03/01 10:00:00', status: '新規' },
-    { id: 2,  name: 'John Smith',    email: 'john@example.com',       language: 'English', notes: 'First time attendee',  eventIds: ['t1e01','t2e02'],         events: '', at: '2026/03/02 11:30:00', status: '新規' },
-    { id: 3,  name: '李 明',         email: 'liming@example.com',     language: '中文', notes: '需要中文翻译',         eventIds: ['t1e03','t2e04'],         events: '', at: '2026/03/03 09:15:00', status: '新規' },
-    { id: 4,  name: '鈴木 一郎',     email: 'ichiro@example.com',     language: '日本語', notes: '',                     eventIds: ['t1e01','t1e04','t2e01'], events: '', at: '2026/03/03 14:00:00', status: '新規' },
-    { id: 5,  name: 'Kim Ji-yeon',   email: 'jiyeon@example.com',     language: 'English', role:'参座', notes: '',                     eventIds: ['t2e03'],                 events: '', at: '2026/03/04 08:45:00', status: '新規' },
-    { id: 6,  name: '田中 さくら',   email: 'sakura@example.com',     language: '日本語', notes: '',                     eventIds: ['t1e03','t1e05'],         events: '', at: '2026/03/05 16:20:00', status: '新規' },
-    { id: 7,  name: '陳 淑芬',       email: 'chenshufen@example.com', language: '中文', notes: '请安排普通话翻译',     eventIds: ['t1e04','t2e06'],         events: '', at: '2026/03/06 10:05:00', status: '新規' },
-    { id: 8,  name: 'Maria Santos',  email: 'maria@example.com',      language: 'English', notes: '',                     eventIds: ['t2e03','t2e04'],         events: '', at: '2026/03/07 13:40:00', status: '新規' },
-    { id: 9,  name: '佐藤 健二',     email: 'kenji@example.com',      language: '日本語', notes: '',                     eventIds: ['t1e05','t1e06'],         events: '', at: '2026/03/08 09:00:00', status: '新規' },
-    { id: 10, name: '林 芳美',       email: 'yoshimi@example.com',    language: '日本語', role:'奉仕', notes: '子連れです',           eventIds: ['t1e07','t1e08'],         events: '', at: '2026/03/10 15:30:00', status: '新規' },
-    { id: 11, name: 'David Chen',    email: 'davidchen@example.com',  language: 'English', notes: 'Please confirm.',      eventIds: ['t1e07','t2e10'],         events: '', at: '2026/03/11 08:50:00', status: '新規' },
-    { id: 12, name: '王 建国',       email: 'wangjg@example.com',     language: '中文', role:'参座', notes: '',                     eventIds: ['t2e08','t2e09'],         events: '', at: '2026/03/12 11:10:00', status: '新規' },
+    { id: 1,  name: 'John Smith',      email: 'john@example.com',       language: 'English', role:'参座', notes: 'First time attendee',  eventIds: ['t1e01','t2e02'],         events: '', at: '2026/03/02 11:30:00', status: '新規' },
+    { id: 2,  name: '李 明',           email: 'liming@example.com',     language: '中文',    role:'参座', notes: '需要中文翻译',         eventIds: ['t1e03','t2e04'],         events: '', at: '2026/03/03 09:15:00', status: '新規' },
+    { id: 3,  name: 'Kim Ji-yeon',     email: 'jiyeon@example.com',     language: 'English', role:'参座', notes: '',                     eventIds: ['t2e03','t1e01'],         events: '', at: '2026/03/04 08:45:00', status: '新規' },
+    { id: 4,  name: '陳 淑芬',         email: 'chenshufen@example.com', language: '中文',    role:'参座', notes: '请安排普通话翻译',     eventIds: ['t1e04','t2e06'],         events: '', at: '2026/03/06 10:05:00', status: '新規' },
+    { id: 5,  name: 'Maria Santos',    email: 'maria@example.com',      language: 'English', role:'奉仕', notes: '',                     eventIds: ['t2e03','t2e04'],         events: '', at: '2026/03/07 13:40:00', status: '新規' },
+    { id: 6,  name: 'David Chen',      email: 'davidchen@example.com',  language: 'English', role:'参座', notes: 'Please confirm.',      eventIds: ['t1e07','t2e10'],         events: '', at: '2026/03/11 08:50:00', status: '新規' },
+    { id: 7,  name: '王 建国',         email: 'wangjg@example.com',     language: '中文',    role:'参座', notes: '',                     eventIds: ['t2e08','t2e09'],         events: '', at: '2026/03/12 11:10:00', status: '新規' },
+    { id: 8,  name: '張 麗華',         email: 'zhanglh@example.com',    language: '中文',    role:'奉仕', notes: '',                     eventIds: ['t2e08','t1e07'],         events: '', at: '2026/03/12 14:00:00', status: '新規' },
     // 翌日以降の法要（予約可能）
-    { id: 13, name: '高橋 美穂',     email: 'miho@example.com',       language: '日本語', notes: '',                     eventIds: ['t1e09','t2e07'],         events: '', at: '2026/03/15 10:00:00', status: '新規' },
-    { id: 14, name: 'Sophie Müller', email: 'sophie@example.com',     language: 'English', notes: '',                     eventIds: ['t1e10'],                 events: '', at: '2026/03/16 14:20:00', status: '新規' },
-    { id: 15, name: '中村 拓也',     email: 'takuya@example.com',     language: '日本語', notes: 'よろしくお願いします', eventIds: ['t1e10','t1e11','t2e12'], events: '', at: '2026/03/17 09:30:00', status: '新規' },
-    { id: 16, name: '张 伟',         email: 'zhangwei@example.com',   language: '中文', notes: '我需要翻译帮助',       eventIds: ['t1e11','t2e13'],         events: '', at: '2026/03/18 16:45:00', status: '新規' },
-    { id: 17, name: 'Emily Parker',  email: 'emily@example.com',      language: 'English', role:'奉仕', notes: 'Thank you.',           eventIds: ['t1e12','t2e14'],         events: '', at: '2026/03/19 08:00:00', status: '新規' },
-    { id: 18, name: '小林 恵子',     email: 'keiko@example.com',      language: '日本語', role:'参座', notes: '',                     eventIds: ['t1e13','t1e14'],         events: '', at: '2026/03/19 10:15:00', status: '新規' },
-    { id: 19, name: '黄 志强',       email: 'huangzq@example.com',    language: '中文', notes: '',                     eventIds: ['t2e15','t2e16'],         events: '', at: '2026/03/20 11:00:00', status: '新規' },
-    { id: 20, name: 'James Tanaka',  email: 'james@example.com',      language: 'English', notes: 'Need English support', eventIds: ['t1e13','t2e15'],         events: '', at: '2026/03/20 13:30:00', status: '新規' },
+    { id: 9,  name: 'Sophie Müller',   email: 'sophie@example.com',     language: 'English', role:'参座', notes: '',                     eventIds: ['t1e09','t1e10'],         events: '', at: '2026/03/16 14:20:00', status: '新規' },
+    { id: 10, name: '张 伟',           email: 'zhangwei@example.com',   language: '中文',    role:'参座', notes: '我需要翻译帮助',       eventIds: ['t1e11','t2e13'],         events: '', at: '2026/03/18 16:45:00', status: '新規' },
+    { id: 11, name: 'Emily Parker',    email: 'emily@example.com',      language: 'English', role:'参座', notes: '',                     eventIds: ['t1e12','t2e14'],         events: '', at: '2026/03/19 08:00:00', status: '新規' },
+    { id: 12, name: 'Robert Kim',      email: 'robertkim@example.com',  language: 'English', role:'奉仕', notes: '',                     eventIds: ['t1e12','t2e14'],         events: '', at: '2026/03/19 09:00:00', status: '新規' },
+    { id: 13, name: '黄 志强',         email: 'huangzq@example.com',    language: '中文',    role:'参座', notes: '',                     eventIds: ['t2e15','t1e13'],         events: '', at: '2026/03/20 11:00:00', status: '新規' },
+    { id: 14, name: 'James Tanaka',    email: 'james@example.com',      language: 'English', role:'参座', notes: 'Need English support', eventIds: ['t1e13','t2e15'],         events: '', at: '2026/03/20 13:30:00', status: '新規' },
+    { id: 15, name: 'Sarah Wong',      email: 'sarah@example.com',      language: 'English', role:'奉仕', notes: '',                     eventIds: ['t1e13','t2e16'],         events: '', at: '2026/03/21 10:00:00', status: '新規' },
+    { id: 16, name: '陳 建志',         email: 'chenjz@example.com',     language: '中文',    role:'奉仕', notes: '',                     eventIds: ['t2e15','t1e14'],         events: '', at: '2026/03/21 11:00:00', status: '新規' },
+    { id: 17, name: 'Michael Lee',     email: 'michaellee@example.com', language: 'English', role:'参座', notes: '',                     eventIds: ['t1e14','t2e16'],         events: '', at: '2026/03/22 09:30:00', status: '新規' },
+    { id: 18, name: '林 美玲',         email: 'linml@example.com',      language: '中文',    role:'参座', notes: '',                     eventIds: ['t1e11','t2e12'],         events: '', at: '2026/03/22 14:00:00', status: '新規' },
+    { id: 19, name: 'Anna Schmidt',    email: 'anna@example.com',       language: 'English', role:'参座', notes: '',                     eventIds: ['t2e11','t1e10'],         events: '', at: '2026/03/23 10:00:00', status: '新規' },
+    { id: 20, name: '劉 曉峰',         email: 'liuxf@example.com',      language: '中文',    role:'参座', notes: '需要口译',             eventIds: ['t2e13','t1e12'],         events: '', at: '2026/03/23 15:00:00', status: '新規' },
   ];
   // eventsフィールドを自動生成
   const evMap = {};
