@@ -629,12 +629,29 @@ function switchTemple(tid) {
 
 // ── EVENTS ──
 function isPast(ev) {
-  // ファイルの年月を直接指定（毎月更新時にここも変更）
-  const YEAR = 2026;
-  const MONTH = 3; // 3月
+  // I18N periodから年月を取得（例: "令和八年 三月" → 2026/3, "March, Reiwa 8" → 2026/3）
+  const period = document.getElementById('hdr-period') ? document.getElementById('hdr-period').textContent : '';
+  let year = 0, month = 0;
+  // 英語: "March, Reiwa 8" など
+  const enM = period.match(/([A-Za-z]+),?\s*Reiwa\s*(\d+)/i);
+  if (enM) {
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    month = monthNames.findIndex(m => m.toLowerCase() === enM[1].toLowerCase()) + 1;
+    year = 2018 + parseInt(enM[2]); // 令和元年=2019
+  }
+  // 日本語/中文: "令和八年 三月" など
+  const jaM = period.match(/令和(\S+?)年\s*(\S+?)月/);
+  if (jaM) {
+    const kanjiNum = {'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,'十一':11,'十二':12};
+    const yearKanji = {'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
+    year = 2018 + (yearKanji[jaM[1]] || parseInt(jaM[1]) || 0);
+    month = kanjiNum[jaM[2]] || parseInt(jaM[2]) || 0;
+  }
+  if (!year || !month) return false;
+  // day フィールドから最初の数字を取得（"20–22" → 20）
   const dayNum = parseInt(String(ev.day));
   if (!dayNum) return false;
-  const evDate = new Date(YEAR, MONTH - 1, dayNum);
+  const evDate = new Date(year, month - 1, dayNum);
   // 日本時間（JST = UTC+9）で今日の日付を取得
   const nowJST = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
   const today  = new Date(nowJST.getUTCFullYear(), nowJST.getUTCMonth(), nowJST.getUTCDate());
