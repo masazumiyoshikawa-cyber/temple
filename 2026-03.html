@@ -424,7 +424,7 @@ const I18N = {
   ja: {
     title: '法要 参座予約',
     period: MONTH_LABEL.ja,
-    nav: ['ご予約', '参座者', '管理'],
+    nav: ['ご予約', '参座・ご奉仕者', '管理'],
     secSelect: '法要をお選びください',
     monthLabel: MONTH_LABEL.ja + ' ── 複数選択可',
     selUnit: '件の法要を選択中',
@@ -471,7 +471,7 @@ const I18N = {
   zh: {
     title: '法会 参座预约',
     period: MONTH_LABEL.zh,
-    nav: ['预约', '参座者', '管理'],
+    nav: ['预约', '参座者·奉仕者', '管理'],
     secSelect: '请选择法会',
     monthLabel: MONTH_LABEL.zh + ' ── 可多选',
     selUnit: '件法会已选择',
@@ -518,7 +518,7 @@ const I18N = {
   en: {
     title: 'Service Reservation',
     period: MONTH_LABEL.en,
-    nav: ['Reserve', 'Attendees', 'Admin'],
+    nav: ['Reserve', 'Attendees & Volunteers', 'Admin'],
     secSelect: 'Select Services',
     monthLabel: MONTH_LABEL.en + ' — Multiple selection allowed',
     selUnit: 'service(s) selected',
@@ -874,11 +874,19 @@ function renderList() {
 
       const g = document.createElement('div');
       g.className = 'att-group' + (past ? ' past-group' : '');
+
+      // この法要でアラートが必要な言語があるか判定
+      const alertLangs = [...new Set(attending.map(b => b.language))]
+        .filter(lng => needsCoverage(ev.id, lng));
+      const hasAlert = alertLangs.length > 0;
+
       g.innerHTML = '<div class="att-group-label">'
         + TEMPLES[tid].name + ' — '
         + ev.day + (wd(ev) ? '（' + wd(ev) + '）' : '') + ' '
         + (ev.name[currentLang]||ev.name.ja)
-        + ' — ' + evB.length + '名</div>';
+        + ' — ' + evB.length + '名'
+        + (hasAlert ? ' <span style="color:var(--danger);font-size:0.72rem;font-weight:600;margin-left:6px;">⚠ ご奉仕者未登録あり</span>' : '')
+        + '</div>';
 
       const split = document.createElement('div');
       split.className = 'att-split';
@@ -891,7 +899,10 @@ function renderList() {
         const item = makeAttItem(b, i);
         if (alert) {
           const langEl = item.querySelector('.att-sub');
-          if (langEl) langEl.classList.add('lang-alert');
+          if (langEl) {
+            langEl.classList.add('lang-alert');
+            langEl.textContent = '⚠ ' + (b.language || '─');
+          }
         }
         colA.appendChild(item);
       });
@@ -901,7 +912,12 @@ function renderList() {
       colS.className = 'att-split-col';
       colS.innerHTML = '<div class="att-split-head serve">' + L.colServe + ' ' + serving.length + '名</div>';
       serving.forEach((b, i) => colS.appendChild(makeAttItem(b, i)));
-      if (!serving.length) colS.innerHTML += '<div style="font-size:0.72rem;color:var(--ink-faint);padding:6px 0;text-align:center;">—</div>';
+      if (!serving.length) {
+        const alertMsg = hasAlert
+          ? '<div style="font-size:0.72rem;color:var(--danger);font-weight:600;padding:6px 0;text-align:center;">⚠ 未登録</div>'
+          : '<div style="font-size:0.72rem;color:var(--ink-faint);padding:6px 0;text-align:center;">—</div>';
+        colS.innerHTML += alertMsg;
+      }
 
       split.appendChild(colA);
       split.appendChild(colS);
@@ -1399,15 +1415,18 @@ emailjs.init({ publicKey: 'pzpq1mqWlAV7x16tx' });
 function sendConfirmEmail(b, evLines, isUpdate) {
   const L = I18N[currentLang];
   const period = document.getElementById('hdr-period')?.textContent || '';
+  const roleJa = b.role === '奉仕' ? 'ご奉仕' : '参座';
+  const roleZh = b.role === '奉仕' ? '奉仕'   : '参座';
+  const roleEn = b.role === '奉仕' ? 'Service (Volunteer)' : 'Attendance';
   const subjects = {
-    ja: isUpdate ? `【ご予約更新】${period} 法要 参座予約` : `【ご予約確認】${period} 法要 参座予約`,
-    zh: isUpdate ? `【预约更新】${period} 法会参座预约` : `【预约确认】${period} 法会参座预约`,
-    en: isUpdate ? `[Reservation Updated] ${period} Service` : `[Reservation Confirmed] ${period} Service`,
+    ja: isUpdate ? `【ご予約更新】${period} 法要 ${roleJa}予約` : `【ご予約確認】${period} 法要 ${roleJa}予約`,
+    zh: isUpdate ? `【预约更新】${period} 法会${roleZh}预约`   : `【预约确认】${period} 法会${roleZh}预约`,
+    en: isUpdate ? `[Reservation Updated] ${period} – ${roleEn}` : `[Reservation Confirmed] ${period} – ${roleEn}`,
   };
   const bodies = {
-    ja: `${b.name} 様\n\n${isUpdate ? '以下の内容でご予約を更新いたしました。' : '以下の法要の参座予約が完了いたしました。'}\n\n${evLines.join('\n')}\n\n言語：${b.language}${b.notes ? '\nご伝言：' + b.notes : ''}\n\n当日の参座をお待ちしております。\n中京本部 / 名古屋支部`,
-    zh: `${b.name}\n\n${isUpdate ? '以下法会的参座预约已更新。' : '以下法会的参座预约已确认。'}\n\n${evLines.join('\n')}\n\n语言：${b.language}${b.notes ? '\n留言：' + b.notes : ''}\n\n期待您的到来。\n中京本部 / 名古屋支部`,
-    en: `Dear ${b.name},\n\n${isUpdate ? 'Your reservation has been updated as follows.' : 'Your reservation for the following service(s) has been confirmed.'}\n\n${evLines.join('\n')}\n\nLanguage: ${b.language}${b.notes ? '\nMessage: ' + b.notes : ''}\n\nWe look forward to welcoming you.\nChukyo Headquarters / Nagoya Branch`,
+    ja: `${b.name} 様\n\n${isUpdate ? '以下の内容でご予約を更新いたしました。' : '以下の法要の予約が完了いたしました。'}\n\n期間：${period}\n種別：${roleJa}\n言語：${b.language}\n\n${evLines.join('\n')}${b.notes ? '\n\nご伝言：' + b.notes : ''}\n\n当日をお待ちしております。\n中京本部 / 名古屋支部`,
+    zh: `${b.name}\n\n${isUpdate ? '以下法会的预约已更新。' : '以下法会的预约已确认。'}\n\n期间：${period}\n类别：${roleZh}\n语言：${b.language}\n\n${evLines.join('\n')}${b.notes ? '\n\n留言：' + b.notes : ''}\n\n期待您的到来。\n中京本部 / 名古屋支部`,
+    en: `Dear ${b.name},\n\n${isUpdate ? 'Your reservation has been updated as follows.' : 'Your reservation has been confirmed.'}\n\nPeriod: ${period}\nRole: ${roleEn}\nLanguage: ${b.language}\n\n${evLines.join('\n')}${b.notes ? '\n\nMessage: ' + b.notes : ''}\n\nWe look forward to seeing you.\nChukyo Headquarters / Nagoya Branch`,
   };
   emailjs.send('service_ipxh0mu', 'template_4hkdbhc', {
     to_email: b.email,
