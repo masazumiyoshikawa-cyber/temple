@@ -912,11 +912,19 @@ function renderList() {
       colS.className = 'att-split-col';
       colS.innerHTML = '<div class="att-split-head serve">' + L.colServe + ' ' + serving.length + '名</div>';
       serving.forEach((b, i) => colS.appendChild(makeAttItem(b, i)));
-      if (!serving.length) {
-        const alertMsg = hasAlert
-          ? '<div style="font-size:0.72rem;color:var(--danger);font-weight:600;padding:6px 0;text-align:center;">⚠ 未登録</div>'
-          : '<div style="font-size:0.72rem;color:var(--ink-faint);padding:6px 0;text-align:center;">—</div>';
-        colS.innerHTML += alertMsg;
+
+      // 言語ごとにご奉仕者未登録アラートを表示
+      const attendLangs = [...new Set(attending.map(b => b.language))].sort((a,b) => a.localeCompare(b,'ja'));
+      attendLangs.forEach(lng => {
+        if (needsCoverage(ev.id, lng)) {
+          const warn = document.createElement('div');
+          warn.style.cssText = 'font-size:0.72rem;color:var(--danger);font-weight:600;padding:4px 0 4px 4px;';
+          warn.textContent = '⚠ ' + lng + ' 未登録';
+          colS.appendChild(warn);
+        }
+      });
+      if (!serving.length && !attendLangs.some(lng => needsCoverage(ev.id, lng))) {
+        colS.innerHTML += '<div style="font-size:0.72rem;color:var(--ink-faint);padding:6px 0;text-align:center;">—</div>';
       }
 
       split.appendChild(colA);
